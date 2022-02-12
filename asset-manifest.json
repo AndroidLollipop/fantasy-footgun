@@ -1,0 +1,19 @@
+{
+  "files": {
+    "main.js": "/fantasy-footgun/static/js/main.35af8853.chunk.js",
+    "main.js.map": "/fantasy-footgun/static/js/main.35af8853.chunk.js.map",
+    "runtime-main.js": "/fantasy-footgun/static/js/runtime-main.4aca56fe.js",
+    "runtime-main.js.map": "/fantasy-footgun/static/js/runtime-main.4aca56fe.js.map",
+    "static/js/2.1bc61a3b.chunk.js": "/fantasy-footgun/static/js/2.1bc61a3b.chunk.js",
+    "static/js/2.1bc61a3b.chunk.js.map": "/fantasy-footgun/static/js/2.1bc61a3b.chunk.js.map",
+    "index.html": "/fantasy-footgun/index.html",
+    "static/js/2.1bc61a3b.chunk.js.LICENSE.txt": "/fantasy-footgun/static/js/2.1bc61a3b.chunk.js.LICENSE.txt",
+    "static/media/5sirlogo.a6ac04db.jpg": "/fantasy-footgun/static/media/5sirlogo.a6ac04db.jpg",
+    "static/media/logo.58ed9303.jpg": "/fantasy-footgun/static/media/logo.58ed9303.jpg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.4aca56fe.js",
+    "static/js/2.1bc61a3b.chunk.js",
+    "static/js/main.35af8853.chunk.js"
+  ]
+}
