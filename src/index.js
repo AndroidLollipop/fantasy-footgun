@@ -107,21 +107,15 @@ const App = () => {
   }, [appbarRef, appbarRef?.current?.offsetHeight])
 
   const militaryPersistentStore = React.useRef({})
-  const militaryFilter = React.useMemo(() => x => x.system !== "Civilian", [])
-  const civilianPersistentStore = React.useRef({})
-  const civilianFilter = React.useMemo(() => x => x.system === "Civilian", [])
   const childScrollContext = React.useRef({})
 
   return (
     <div>
       <Tabs childWrapper={ScrollWrapper} childContext={childScrollContext} selTab={selTab} setSelTab={setSelTab} appbarRef={appbarRef}>
-        {[(<div label="military" key="defaultTab0" mykey="defaultTab0">
-          <TransportView setSelTab={setSelTab} heightProvider={[currentHeight, heightListeners]} transportPersistentStore={militaryPersistentStore.current} filter={militaryFilter}/>
+        {[(<div label="leaderboard" key="defaultTab0" mykey="defaultTab0">
+          <Leaderboard setSelTab={setSelTab} heightProvider={[currentHeight, heightListeners]} transportPersistentStore={militaryPersistentStore.current} />
         </div>),
-        (<div label="civilian" key="defaultTab1" mykey="defaultTab1">
-          <TransportView setSelTab={setSelTab} heightProvider={[currentHeight, heightListeners]} transportPersistentStore={civilianPersistentStore.current} filter={civilianFilter}/>
-        </div>),
-        (<div label="new indent" key="defaultTab2" mykey="defaultTab2">
+        (<div label="predict" key="defaultTab2" mykey="defaultTab2">
           <NewIndentView id={0}/>
         </div>),
         (<div label="notifications" key="defaultTab3" mykey="defaultTab3">
@@ -510,14 +504,12 @@ const Appointment = (setSelTab) => ({data, children, ...restProps}) => {
   </Appointments.Appointment>)
 }
 
-const TransportView = ({setSelTab, heightProvider, transportPersistentStore, filter}) => {
+const Leaderboard = ({setSelTab, heightProvider, transportPersistentStore}) => {
   if (transportPersistentStore.initialized !== true) {
     transportPersistentStore.initialized = true
     transportPersistentStore.data = ""
     transportPersistentStore.sort = null
     transportPersistentStore.up = true
-    transportPersistentStore.view = "list"
-    transportPersistentStore.selDate = (x => (x.setMinutes(x.getMinutes()-x.getTimezoneOffset()), x))(new Date()).toISOString().slice(0, 10)
   }
   const range = readRange()
   React.useEffect(() => {
@@ -538,8 +530,6 @@ const TransportView = ({setSelTab, heightProvider, transportPersistentStore, fil
   const onChange = value => {
     transportPersistentStore.data = value
     setSearch(value)
-    transportPersistentStore.view = "list"
-    setView("list")
     transportPersistentStore.sort = null
     setSort(null)
     transportPersistentStore.up = true
@@ -557,8 +547,7 @@ const TransportView = ({setSelTab, heightProvider, transportPersistentStore, fil
   const barRef = React.useRef(null)
   const [mySort, setSort] = React.useState(transportPersistentStore.sort)
   const [isUp, setUp] = React.useState(transportPersistentStore.up)
-  const preFilteredData = React.useMemo(() => data.filter(x => x.status !== "Hidden"), [data])
-  const filteredData = React.useMemo(() => preFilteredData.filter(filter), [preFilteredData, filter])
+  const filteredData = React.useMemo(() => data.filter(x => x.status !== "Hidden"), [data])
   const sortedData = React.useMemo(() => mySort === null ? filteredData : filteredData.map((x, index) => [x, index]).sort(([dx, ix], [dy, iy]) => {
     const materializer = typeof sortMaterializers[mySort] === "function" ? sortMaterializers[mySort] : x => x
     const x = materializer(dx[mySort])
@@ -589,8 +578,6 @@ const TransportView = ({setSelTab, heightProvider, transportPersistentStore, fil
     transportPersistentStore.up = set
     setUp(set)
   }
-  const [view, setView] = React.useState(transportPersistentStore.view)
-  const [selDate, setDate] = React.useState(transportPersistentStore.selDate)
   const myAppointment = React.useMemo(() => Appointment(setSelTab), [setSelTab])
   React.useEffect(() => {
     if (barRef.current === null) {
@@ -611,46 +598,14 @@ const TransportView = ({setSelTab, heightProvider, transportPersistentStore, fil
             value={search}
             onChange={onChange}
             onCancelSearch={() => onChange("")}
-            onRequestSearch={() => {
-              if (view === "list") {
-                transportPersistentStore.view = "calendar"
-                setView("calendar")
-              }
-              else {
-                transportPersistentStore.view = "list"
-                setView("list")
-              }
-            }}
+            onRequestSearch={() => {}}
             style={{margin: "auto", maxWidth: "1000px"}}
-            searchIcon={<AnimatedIcon icon={view}/>}
             />
         </div>
       </div>
       <div style={{height: "12px"}}/>
       <Material.Paper square>
-        {view === "list" ? (<ListFactory header={(<MyStickyHeader heightProvider={heightProvider}>{displayFields.map((x, index) => (<Material.TableCell key={index}><Material.TableSortLabel active={mySort === x.name} direction={mySort === x.name && isUp === false ? "desc" : "asc"} onClick={() => sortOnClick(x.name)}>{x.friendlyName}</Material.TableSortLabel></Material.TableCell>))}</MyStickyHeader>)} data={reversedData} generator={x => transportItemGenerator(x, x.internalUID, setSelTab)} style={TransportViewStyle}/>)
-        : (<Scheduler data={filteredData.map(x => {
-          const fmt = str => str.slice(6,10)+"-"+str.slice(3,5)+"-"+str.slice(0,2)+"T"+str.slice(11,16)
-          return {
-            startDate: fmt(x.startDateTime),
-            endDate: fmt(x.endDateTime),
-            title: x.name,
-            internalUID: x.internalUID,
-            status: x.status,
-            system: x.system
-          }
-        })}>
-          <ViewState defaultCurrentDate={selDate} onCurrentDateChange={date => {
-            transportPersistentStore.selDate = date
-            setDate(date)
-          }}/>
-          <MonthView/>
-          <Appointments
-            appointmentComponent={myAppointment}
-          />
-          <Toolbar/>
-          <DateNavigator/>
-        </Scheduler>)}
+        <ListFactory header={(<MyStickyHeader heightProvider={heightProvider}>{displayFields.map((x, index) => (<Material.TableCell key={index}><Material.TableSortLabel active={mySort === x.name} direction={mySort === x.name && isUp === false ? "desc" : "asc"} onClick={() => sortOnClick(x.name)}>{x.friendlyName}</Material.TableSortLabel></Material.TableCell>))}</MyStickyHeader>)} data={reversedData} generator={x => transportItemGenerator(x, x.internalUID, setSelTab)} style={TransportViewStyle}/>
       </Material.Paper>
     </div>
   )
