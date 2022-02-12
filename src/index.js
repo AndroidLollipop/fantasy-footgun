@@ -23,8 +23,6 @@ import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
 import AddIcon from "@material-ui/icons/Add"
 
-import ClientSecret from "./CLIENT_SECRET.js"
-
 const VERSION_NUMBER = "0.1.20a"
 console.log(VERSION_NUMBER)
 
@@ -147,29 +145,6 @@ const App = () => {
       <img src={sir5logo} width="192px"/>
     </div>
   );
-}
-
-const DevPanel = () => {
-  const [myServerURL, setServerURL] = React.useState(serverURL)
-  const [response, setResponse] = React.useState("");
-  const myListener = data => {
-    setResponse(data)
-  }
-
-  React.useEffect(() => {
-    socket.on("FromAPI", myListener);
-    return () => {
-      socket.off("FromAPI", myListener)
-    }
-  }, []);
-
-  return (<div>
-    <div>Server URL</div><textarea value={myServerURL} onChange={(event) => {
-      serverURL = event.target.value
-      setServerURL(serverURL)
-    }}/>
-    <div>It's {response}</div>
-  </div>)
 }
 
 const NotificationsPanel = ({setSelTab}) => {
@@ -408,16 +383,7 @@ const FormFactory = ({prefill, fields, defaults, formPersistentStore, validator}
       alert(params)
     }
     else if (result === "AUTHENTICATE") {
-      const password = prompt(params)
-      if (password === null || password === "") {
-        return
-      }
-      else if (password === ClientSecret) {
-        submit(true)
-      }
-      else {
-        alert("Incorrect bypass code.")
-      }
+      alert("Not implemented.")
     }
   }
   return (
