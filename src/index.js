@@ -23,7 +23,7 @@ import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
 import AddIcon from "@material-ui/icons/Add"
 
-const VERSION_NUMBER = "fantasy-footgun 0.1.20a"
+const VERSION_NUMBER = "fantasy-footgun 0.1.0"
 console.log(VERSION_NUMBER)
 
 const ranker = require("./searchRanker.js")
