@@ -312,6 +312,32 @@ const wls = (key, item) => {
   window.localStorage.setItem(`ALFG${key}`, item)
 }
 
+const TeamDisplay = (rawData) => {
+  const data = rawData.data
+  return <div>
+    <div>
+      <div style={formItemStyle}>
+        <Material.Typography>{`Nickname: ${data.nickname}`}</Material.Typography>
+      </div>
+      <div style={formItemStyle}>
+        <Material.Typography>{`SAR21: ${JSON.parse(data.sar21).name}`}</Material.Typography>
+        <div style={{flexBasis: "100%", height: "12px"}}/>
+        <img src={JSON.parse(data.sar21).photo} height={125} width={125}/>
+      </div>
+      <div style={formItemStyle}>
+        <Material.Typography>{`SAR21: ${JSON.parse(data.saw).name}`}</Material.Typography>
+        <div style={{flexBasis: "100%", height: "12px"}}/>
+        <img src={JSON.parse(data.saw).photo} height={125} width={125}/>
+      </div>
+      <div style={formItemStyle}>
+        <Material.Typography>{`SAR21: ${JSON.parse(data.gpmg).name}`}</Material.Typography>
+        <div style={{flexBasis: "100%", height: "12px"}}/>
+        <img src={JSON.parse(data.gpmg).photo} height={125} width={125}/>
+      </div>
+    </div>
+  </div>
+}
+
 const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) => {
   var fieldStates = []
   var myPersistentStore = formPersistentStore === undefined ? {} : formPersistentStore
@@ -319,7 +345,6 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
     myPersistentStore.data = fields.map(x => {
       if (typeof prefill === "object") {
         const prefilledField = prefill[x.name]
-        console.log(prefilledField)
         if (prefilledField !== undefined) {
           const prefillConverter = prefillConverters[x.name]
           if (typeof prefillConverter === "function") {
@@ -471,7 +496,6 @@ const formItemStyle = {
 const TeamView = ({id, cloneID}) => {
   React.useEffect(() => {
     const callbackID = registerForm(value => {
-      console.log(value)
       setRl(value)
     })
     return () => deregisterForm(callbackID)
@@ -484,7 +508,7 @@ const TeamView = ({id, cloneID}) => {
   const prefill = React.useMemo(() => {
     return rl ? JSON.parse(rl) : undefined
   }, [rl])
-  return (<div style={TransportViewStyle}><div style={{height: "12px"}}/>{rl ? <div>{JSON.stringify(rl)}</div> : <FormFactory blobs={form.blobs} prefill={prefill} fields={form.fields} defaults={dataDefaults} formPersistentStore={detailPersistentStore[id]} validator={teamValidator}/>}</div>)
+  return (<div style={TransportViewStyle}><div style={{height: "12px"}}/>{rl ? <TeamDisplay data={prefill}/> : <FormFactory blobs={form.blobs} prefill={prefill} fields={form.fields} defaults={dataDefaults} formPersistentStore={detailPersistentStore[id]} validator={teamValidator}/>}</div>)
 }
 
 const DEBOUNCE_PERIOD = 100
