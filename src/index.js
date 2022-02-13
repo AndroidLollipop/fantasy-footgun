@@ -275,30 +275,15 @@ const readForm = () => {
   return formStore
 }
 
-const newIndentValidator = (data, authenticated) => {
-  const system = data.system
-  const fmt = str => str.slice(6,10)+"-"+str.slice(3,5)+"-"+str.slice(0,2)+"T"+str.slice(11,16)
-  const sd = Math.min(new Date(fmt(data.startDateTime)))
-  if (sd !== sd) {
-    return ["FAILED", "Enter a valid start date"]
-  }
-  const ed = Math.min(new Date(fmt(data.endDateTime)))
-  if (ed !== ed) {
-    return ["FAILED", "Enter a valid end date"]
-  }
-  if (ed <= sd) {
-    return ["FAILED", "End date must be after start date"]
-  }
-  const timeDelta = Math.min(sd||Infinity, ed||Infinity)-(new Date())
-  if (((system !== "Civilian" && timeDelta < 1468800000) || timeDelta < 864000000) && authenticated !== true) {
-    return ["AUTHENTICATE", "This indent is too late. Please discuss this indent manually with the transport clerk."]
-  }
+const readSubmitted = () => {
+  return rls("locked")
+}
+
+const teamValidator = data => {
   for (const field in data) {
-    if (fieldAttributes[field].optional !== true && (typeof data[field] !== "string" || data[field].trim() === "")) {
-      if (fieldToFriendly[field] !== undefined) {
-        return ["FAILED", fieldToFriendly[field] + " cannot be empty"]
-      }
-      return ["FAILED", "Field cannot be empty"]
+    const val = data[field]
+    if (!val || typeof val === "string" && (val.length === 0 || val === JSON.stringify({name: null}))) {
+      return ["FAILED", "Please fill in all fields"]
     }
   }
   return ["SUCCESS"]
@@ -327,13 +312,14 @@ const wls = (key, item) => {
   window.localStorage.setItem(`ALFG${key}`, item)
 }
 
-const FormFactory = ({blobs, prefill, fields, formPersistentStore}) => {
+const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) => {
   var fieldStates = []
   var myPersistentStore = formPersistentStore === undefined ? {} : formPersistentStore
   if (myPersistentStore.data === undefined) {
     myPersistentStore.data = fields.map(x => {
       if (typeof prefill === "object") {
         const prefilledField = prefill[x.name]
+        console.log(prefilledField)
         if (prefilledField !== undefined) {
           const prefillConverter = prefillConverters[x.name]
           if (typeof prefillConverter === "function") {
@@ -342,8 +328,7 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore}) => {
           return prefilledField
         }
       }
-      const ls = rls(x.name)
-      return ls ? ls : x.initialData
+      return x.initialData
     })
   }
   const [states, setStates] = React.useState(myPersistentStore.data)
@@ -358,7 +343,23 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore}) => {
       setStates(myStates)
     },field.initialData, field.name, field.friendlyName, field.fieldType, field.options, field.blobName])
   }
+  const submit = async (authenticated) => {
+    var constitutedObject = {}
+    for (const [text, setText, initialData, fieldName, friendlyName, fieldType] of fieldStates) {
+      const normalizer = normalizers[fieldType]
+      constitutedObject[fieldName] = normalizer ? normalizer(text) : text
+    }
+    const res = validator(constitutedObject)
+    if (res[0] !== "SUCCESS") {
+      alert(res[1])
+      return
+    }
+    const str = JSON.stringify(constitutedObject)
+    wls("locked", str)
+    notifyNewForm(str)
+  }
   return (
+  <div>
   <div>
   {fieldStates.map(([text, setText, initialData, fieldName, friendlyName, fieldType, options, blobName], index) => {
     return (
@@ -408,7 +409,7 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore}) => {
           SelectProps={{
             native: true
           }}
-          onChange={(event) => {wls(fieldName, event.target.value); setText(event.target.value)}}
+          onChange={(event) => setText(event.target.value)}
           InputLabelProps={{
             shrink: true,
           }}
@@ -437,6 +438,10 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore}) => {
     )
   })}
   </div>
+  <div style={{height:"12px"}}/>
+  <Material.Button variant="outlined" onClick={submit}>lock in team</Material.Button>
+  <div style={{height:"48px"}}/>
+  </div>
   )
 }
 
@@ -464,12 +469,22 @@ const formItemStyle = {
 }
 
 const TeamView = ({id, cloneID}) => {
+  React.useEffect(() => {
+    const callbackID = registerForm(value => {
+      console.log(value)
+      setRl(value)
+    })
+    return () => deregisterForm(callbackID)
+  }, [])
   const form = readForm()
   if (detailPersistentStore[id] === undefined) {
     detailPersistentStore[id] = {}
   }
-  const prefill = React.useMemo(() => cloneID !== undefined ? readDataStore(cloneID) : undefined, [cloneID, dataDefaults])
-  return (<div style={TransportViewStyle}><div style={{height: "12px"}}/><FormFactory blobs={form.blobs} prefill={prefill} fields={form.fields} defaults={dataDefaults} formPersistentStore={detailPersistentStore[id]} validator={newIndentValidator}/></div>)
+  const [rl, setRl] = React.useState(rls("locked"))
+  const prefill = React.useMemo(() => {
+    return rl ? JSON.parse(rl) : undefined
+  }, [rl])
+  return (<div style={TransportViewStyle}><div style={{height: "12px"}}/>{rl ? <div>{JSON.stringify(rl)}</div> : <FormFactory blobs={form.blobs} prefill={prefill} fields={form.fields} defaults={dataDefaults} formPersistentStore={detailPersistentStore[id]} validator={teamValidator}/>}</div>)
 }
 
 const DEBOUNCE_PERIOD = 100
@@ -792,7 +807,7 @@ const getCallbackSystem = (dataSource) => {
 
 var dataStore = {columns: ["Username", "Total Score", "SAR21", "SAW", "GPMG"], rows: [["PTE A", 500, 300, 100, 100], ["PTE B", 300, 0, 200, 100], ["PTE C", 100, 0, 100, 0]]}
 
-var formStore = {fields: [{name: "sar21", initialData: JSON.stringify({name: null}), friendlyName: "Best SAR21" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "saw", initialData: JSON.stringify({name: null}), friendlyName: "Best SAW" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "gpmg", initialData: JSON.stringify({name: null}), friendlyName: "Best GPMG" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}], data: {}, blobs: {"Soldiers": [{name: "Alpha - PTE 1", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Bravo - PTE 2", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Charlie - PTE 3", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Support - PTE 4", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "MSC - PTE 5", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}]}}
+var formStore = {fields: [{name: "nickname", initialData: "", friendlyName: "Nickname", fieldType: "single"}, {name: "sar21", initialData: JSON.stringify({name: null}), friendlyName: "Best SAR21" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "saw", initialData: JSON.stringify({name: null}), friendlyName: "Best SAW" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "gpmg", initialData: JSON.stringify({name: null}), friendlyName: "Best GPMG" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}], data: {}, blobs: {"Soldiers": [{name: "Alpha - PTE 1", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Bravo - PTE 2", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Charlie - PTE 3", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Support - PTE 4", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "MSC - PTE 5", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}]}}
 
 const readNotifications = () => {
   return notificationsStore
@@ -880,6 +895,8 @@ const TabCloseStyle = {
 }
 
 const [registerCallback, deregisterCallback, notifyNewData] = getCallbackSystem(readRange)
+
+const [registerForm, deregisterForm, notifyNewForm] = getCallbackSystem(readSubmitted)
 
 const [registerNotify, deregisterNotify, notifyNewN] = getCallbackSystem(readNotifications)
 
