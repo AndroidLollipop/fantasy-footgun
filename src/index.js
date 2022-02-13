@@ -28,7 +28,7 @@ console.log(VERSION_NUMBER)
 
 const ranker = require("./searchRanker.js")
 
-var serverURL = "https://murmuring-ocean-38436.herokuapp.com/"
+var serverURL = "https://null.herokuapp.com/"
 
 var setTabs
 var additionalTabs = []
