@@ -325,12 +325,12 @@ const TeamDisplay = (rawData) => {
         <img src={JSON.parse(data.sar21).photo} height={125} width={125}/>
       </div>
       <div style={formItemStyle}>
-        <Material.Typography>{`SAR21: ${JSON.parse(data.saw).name}`}</Material.Typography>
+        <Material.Typography>{`SAW: ${JSON.parse(data.saw).name}`}</Material.Typography>
         <div style={{flexBasis: "100%", height: "12px"}}/>
         <img src={JSON.parse(data.saw).photo} height={125} width={125}/>
       </div>
       <div style={formItemStyle}>
-        <Material.Typography>{`SAR21: ${JSON.parse(data.gpmg).name}`}</Material.Typography>
+        <Material.Typography>{`GPMG: ${JSON.parse(data.gpmg).name}`}</Material.Typography>
         <div style={{flexBasis: "100%", height: "12px"}}/>
         <img src={JSON.parse(data.gpmg).photo} height={125} width={125}/>
       </div>
