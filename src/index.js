@@ -112,14 +112,11 @@ const App = () => {
   return (
     <div>
       <Tabs childWrapper={ScrollWrapper} childContext={childScrollContext} selTab={selTab} setSelTab={setSelTab} appbarRef={appbarRef}>
-        {[(<div label="leaderboard" key="defaultTab0" mykey="defaultTab0">
-          <Leaderboard setSelTab={setSelTab} heightProvider={[currentHeight, heightListeners]} transportPersistentStore={militaryPersistentStore.current} />
-        </div>),
-        (<div label="predict" key="defaultTab2" mykey="defaultTab2">
+        {[(<div label="my team" key="defaultTab0" mykey="defaultTab0">
           <NewIndentView id={0}/>
         </div>),
-        (<div label="notifications" key="defaultTab3" mykey="defaultTab3">
-          <NotificationsPanel setSelTab={setSelTab}/>
+        (<div label="leaderboard" key="defaultTab1" mykey="defaultTab1">
+          <Leaderboard setSelTab={setSelTab} heightProvider={[currentHeight, heightListeners]} transportPersistentStore={militaryPersistentStore.current} />
         </div>), ...tabs.map(({type, params: v}, i) => type === "detail" ? (<DetailGenerator setSelTab={setSelTab} mykey={v[0]} label={readDataStore(v[1]).name} removable="true" removeCallback={(index, length) => {
           removeTab(v[0])
           const currSelTab = Math.min(selTab, length-1)
@@ -127,13 +124,7 @@ const App = () => {
             setSelTab(currSelTab-1)
           }
         }} details={v} key={v[0]} heightProvider={[currentHeight, heightListeners]} />)
-        : type === "newindent" ? (<NewIndentView cloneID={v[1]} mykey={v[0]} label="new indent" removable="true" removeCallback={(index, length) => {
-          removeTab(v[0])
-          const currSelTab = Math.min(selTab, length-1)
-          if (currSelTab > index) {
-            setSelTab(currSelTab-1)
-          }
-        }} id={v[0]} key={v[0]}/>) : (<div></div>))]}
+        : (<div></div>))]}
       </Tabs>
       <div style={{height: "12px"}}/>
       <img src={sir5logo} width="192px"/>
@@ -381,7 +372,6 @@ const FormFactory = ({prefill, fields, defaults, formPersistentStore, validator}
     }
   }
   return (
-  <form noValidate>
   <div>
   {fieldStates.map(([text, setText, initialData, fieldName, friendlyName, fieldType, options], index) => {
     return (
@@ -436,8 +426,6 @@ const FormFactory = ({prefill, fields, defaults, formPersistentStore, validator}
     )
   })}
   </div>
-  <Material.Button variant="outlined" onClick={submit}>submit</Material.Button>
-  </form>
   )
 }
 
@@ -473,35 +461,11 @@ const NewIndentView = ({id, cloneID}) => {
 
 const DEBOUNCE_PERIOD = 100
 
-const Appointment = (setSelTab) => ({data, children, ...restProps}) => {
-  const system = data.system
-  var backgroundColor = "gray"
-  if (data.status === "Confirmed") {
-    backgroundColor = "green"
+const initialUpState = (index) => {
+  if (typeof index === "number" && index > 0) {
+    return false
   }
-  else if (data.status === "Recommended") {
-    backgroundColor = "rgb(77, 77, 77)"
-  }
-  else {
-    const timeDelta = Math.min(Math.min(new Date(data.startDate))||Infinity, Math.min(new Date(data.endDate))||Infinity)-(new Date())
-    if ((system !== "Civilian" && timeDelta < 1468800000) || timeDelta < 864000000) {
-      backgroundColor = "red"
-    }
-    else if ((system !== "Civilian" && timeDelta < 1814400000) || timeDelta < 1209600000) {
-      backgroundColor = "rgb(204, 204, 0)"
-    }
-  }
-  return (<Appointments.Appointment
-    {...restProps}
-    data={data}
-    onClick={obj => {
-      addDetailTab(undefined, obj.data.internalUID)
-      setSelTab(Infinity)
-    }}
-    style={{backgroundColor: backgroundColor}}
-  >
-    {children}
-  </Appointments.Appointment>)
+  return true
 }
 
 const Leaderboard = ({setSelTab, heightProvider, transportPersistentStore}) => {
@@ -511,9 +475,11 @@ const Leaderboard = ({setSelTab, heightProvider, transportPersistentStore}) => {
     transportPersistentStore.sort = null
     transportPersistentStore.up = true
   }
-  const range = readRange()
+  const rawRange = readRange()
+  const range = rawRange.rows
   React.useEffect(() => {
-    const callbackID = registerCallback(value => {
+    const callbackID = registerCallback(rawValue => {
+      const value = rawValue.rows
       myData.current = value
       myRanker.current = ranker.makeRanker(value)
       setData(myQuery.current !== "" ? myRanker.current(myQuery.current) : value)
@@ -527,6 +493,7 @@ const Leaderboard = ({setSelTab, heightProvider, transportPersistentStore}) => {
   const myRanker = React.useRef(vRanker)
   const myQuery = React.useRef(transportPersistentStore.data)
   const [data, setData] = React.useState(transportPersistentStore.data !== "" ? vRanker(transportPersistentStore.data) : range)
+  const columns = rawRange.columns
   const onChange = value => {
     transportPersistentStore.data = value
     setSearch(value)
@@ -548,6 +515,7 @@ const Leaderboard = ({setSelTab, heightProvider, transportPersistentStore}) => {
   const [mySort, setSort] = React.useState(transportPersistentStore.sort)
   const [isUp, setUp] = React.useState(transportPersistentStore.up)
   const filteredData = React.useMemo(() => data.filter(x => x.status !== "Hidden"), [data])
+  console.log(mySort)
   const sortedData = React.useMemo(() => mySort === null ? filteredData : filteredData.map((x, index) => [x, index]).sort(([dx, ix], [dy, iy]) => {
     const materializer = typeof sortMaterializers[mySort] === "function" ? sortMaterializers[mySort] : x => x
     const x = materializer(dx[mySort])
@@ -574,11 +542,10 @@ const Leaderboard = ({setSelTab, heightProvider, transportPersistentStore}) => {
   const sortOnClick = name => {
     transportPersistentStore.data = ""
     setSearch("")
-    const set = name === mySort ? (isUp === false ? (transportPersistentStore.sort = null, setSort(null), true) : false) : (transportPersistentStore.sort = name, setSort(name), true)
+    const set = name === mySort ? (isUp !== initialUpState(name) ? (transportPersistentStore.sort = null, setSort(null), true) : !initialUpState(name)) : (transportPersistentStore.sort = name, setSort(name), initialUpState(name))
     transportPersistentStore.up = set
     setUp(set)
   }
-  const myAppointment = React.useMemo(() => Appointment(setSelTab), [setSelTab])
   React.useEffect(() => {
     if (barRef.current === null) {
       return
@@ -605,7 +572,7 @@ const Leaderboard = ({setSelTab, heightProvider, transportPersistentStore}) => {
       </div>
       <div style={{height: "12px"}}/>
       <Material.Paper square>
-        <ListFactory header={(<MyStickyHeader heightProvider={heightProvider}>{displayFields.map((x, index) => (<Material.TableCell key={index}><Material.TableSortLabel active={mySort === x.name} direction={mySort === x.name && isUp === false ? "desc" : "asc"} onClick={() => sortOnClick(x.name)}>{x.friendlyName}</Material.TableSortLabel></Material.TableCell>))}</MyStickyHeader>)} data={reversedData} generator={x => transportItemGenerator(x, x.internalUID, setSelTab)} style={TransportViewStyle}/>
+        <ListFactory header={(<MyStickyHeader heightProvider={heightProvider}>{columns.map((x, index) => (<Material.TableCell key={index}><Material.TableSortLabel active={mySort === index} direction={(mySort === index ? !(isUp === false) : initialUpState(index)) ? "asc" : "desc"} onClick={() => sortOnClick(index)}>{x}</Material.TableSortLabel></Material.TableCell>))}</MyStickyHeader>)} data={reversedData} generator={x => transportItemGenerator(x, x[0], setSelTab)} style={TransportViewStyle}/>
       </Material.Paper>
     </div>
   )
@@ -702,40 +669,12 @@ const TransportViewStyle = {
 }
 
 const transportItemGenerator = (data, index, setSelTab) => {
-  const system = data.system === "Civilian" ? "Civilian" : "Military"
-  const fmt = str => str.slice(6,10)+"-"+str.slice(3,5)+"-"+str.slice(0,2)+"T"+str.slice(11,16)
-  var backgroundColor = "white"
-  if (data.status === "Confirmed") {
-    backgroundColor = "rgb(230, 255, 230)"
-  }
-  else if (data.status === "Recommended") {
-    backgroundColor = "rgb(238, 238, 238)"
-  }
-  else {
-    const timeDelta = Math.min(Math.min(new Date(fmt(data.startDateTime)))||Infinity, Math.min(new Date(fmt(data.endDateTime)))||Infinity)-(new Date())
-    if ((system !== "Civilian" && timeDelta < 1468800000) || timeDelta < 864000000) {
-      backgroundColor = "rgb(255, 230, 230)"
-    }
-    else if ((system !== "Civilian" && timeDelta < 1814400000) || timeDelta < 1209600000) {
-      backgroundColor = "rgb(255, 255, 204)"
-    }
-  }
   return (
-    <Material.TableRow style={{backgroundColor}} key={data.internalUID} onClick={() => {
-      addDetailTab(data, index)
-      setSelTab(Infinity)
+    <Material.TableRow key={data.internalUID} onClick={() => {
+      //addDetailTab(data, index)
+      //setSelTab(Infinity)
     }}>
-      <Material.TableCell>{data.name}</Material.TableCell>
-      <Material.TableCell>{data.startDateTime}</Material.TableCell>
-      <Material.TableCell>{data.endDateTime}</Material.TableCell>
-      <Material.TableCell>{data.origin}</Material.TableCell>
-      <Material.TableCell>{data.destination}</Material.TableCell>
-      <Material.TableCell>{data.POC}</Material.TableCell>
-      <Material.TableCell>{data.POCPhone}</Material.TableCell>
-      <Material.TableCell>{data.vehicles}</Material.TableCell>
-      <Material.TableCell>{data.notes}</Material.TableCell>
-      <Material.TableCell>{data.addInfo}</Material.TableCell>
-      <Material.TableCell>{data.status}</Material.TableCell>
+      {data.map(x => <Material.TableCell>{x}</Material.TableCell>)}
     </Material.TableRow>
   )
 }
@@ -824,7 +763,7 @@ const getCallbackSystem = (dataSource) => {
   return [registerCallback, deregisterCallback, notifyNewData]
 }
 
-var dataStore = []
+var dataStore = {columns: ["Username", "Total Score", "SAR21", "SAW", "GPMG"], rows: [["PTE A", 500, 300, 100, 100], ["PTE B", 300, 0, 200, 100], ["PTE C", 100, 0, 100, 0]]}
 
 const readNotifications = () => {
   return notificationsStore
@@ -877,10 +816,7 @@ for (const description of [...formFields, ...dataDefaults]) {
 
 const Tabs = ({childWrapper, childContext, children, selTab, setSelTab, appbarRef}) => {
   const pre = [(<Material.Tab style={{opacity: 1, minWidth: 0, minHeight:0, padding: 0}} disableRipple selected label={<div style={{height: "48px", width: "48px"}}><img src={appLogo} height="48px" width="48px"/></div>}/>)]
-  const post = [(<Material.Tab style={{opacity: 1, minWidth: 0, minHeight:0, padding: 0}} disableRipple selected label={<Material.IconButton onClick={() => {
-    addNewTab()
-    setSelTab(Infinity)
-  }} size="small" className="MuiTab-textColorInherit"><AddIcon style={{color: "white"}}/></Material.IconButton>}/>)]
+  const post = []
   const ChildWrapper = childWrapper
   return (
     <div>
