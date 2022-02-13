@@ -515,7 +515,6 @@ const Leaderboard = ({setSelTab, heightProvider, transportPersistentStore}) => {
   const [mySort, setSort] = React.useState(transportPersistentStore.sort)
   const [isUp, setUp] = React.useState(transportPersistentStore.up)
   const filteredData = React.useMemo(() => data.filter(x => x.status !== "Hidden"), [data])
-  console.log(mySort)
   const sortedData = React.useMemo(() => mySort === null ? filteredData : filteredData.map((x, index) => [x, index]).sort(([dx, ix], [dy, iy]) => {
     const materializer = typeof sortMaterializers[mySort] === "function" ? sortMaterializers[mySort] : x => x
     const x = materializer(dx[mySort])
@@ -670,11 +669,11 @@ const TransportViewStyle = {
 
 const transportItemGenerator = (data, index, setSelTab) => {
   return (
-    <Material.TableRow key={data.internalUID} onClick={() => {
+    <Material.TableRow key={index} onClick={() => {
       //addDetailTab(data, index)
       //setSelTab(Infinity)
     }}>
-      {data.map(x => <Material.TableCell>{x}</Material.TableCell>)}
+      {data.map((x, index) => <Material.TableCell key={index}>{x}</Material.TableCell>)}
     </Material.TableRow>
   )
 }
