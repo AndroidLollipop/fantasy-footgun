@@ -113,7 +113,7 @@ const App = () => {
     <div>
       <Tabs childWrapper={ScrollWrapper} childContext={childScrollContext} selTab={selTab} setSelTab={setSelTab} appbarRef={appbarRef}>
         {[(<div label="my team" key="defaultTab0" mykey="defaultTab0">
-          <NewIndentView id={0}/>
+          <TeamView id={0}/>
         </div>),
         (<div label="leaderboard" key="defaultTab1" mykey="defaultTab1">
           <Leaderboard setSelTab={setSelTab} heightProvider={[currentHeight, heightListeners]} transportPersistentStore={militaryPersistentStore.current} />
@@ -271,6 +271,10 @@ const readRange = () => {
   return dataStore
 }
 
+const readForm = () => {
+  return formStore
+}
+
 const newIndentValidator = (data, authenticated) => {
   const system = data.system
   const fmt = str => str.slice(6,10)+"-"+str.slice(3,5)+"-"+str.slice(0,2)+"T"+str.slice(11,16)
@@ -315,7 +319,15 @@ const submitForm = async (data, validator, authenticated) => {
   return ["UNKNOWN"]
 }
 
-const FormFactory = ({prefill, fields, defaults, formPersistentStore, validator}) => {
+const rls = (key) => {
+  return window.localStorage.getItem(`ALFG${key}`)
+}
+
+const wls = (key, item) => {
+  window.localStorage.setItem(`ALFG${key}`, item)
+}
+
+const FormFactory = ({blobs, prefill, fields, formPersistentStore}) => {
   var fieldStates = []
   var myPersistentStore = formPersistentStore === undefined ? {} : formPersistentStore
   if (myPersistentStore.data === undefined) {
@@ -330,7 +342,8 @@ const FormFactory = ({prefill, fields, defaults, formPersistentStore, validator}
           return prefilledField
         }
       }
-      return x.initialData
+      const ls = rls(x.name)
+      return ls ? ls : x.initialData
     })
   }
   const [states, setStates] = React.useState(myPersistentStore.data)
@@ -343,37 +356,11 @@ const FormFactory = ({prefill, fields, defaults, formPersistentStore, validator}
       myStates[i] = x
       myPersistentStore.data = myStates
       setStates(myStates)
-    },field.initialData, field.name, field.friendlyName, field.fieldType, field.options])
-  }
-  const initializeFields = () => {
-    const initializedFields = fields.map(x => x.initialData)
-    myPersistentStore.data = initializedFields
-    setStates(initializedFields)
-  }
-  const submit = async (authenticated) => {
-    var constitutedObject = {}
-    for (const {name, initialData} of defaults) {
-      constitutedObject[name] = initialData
-    }
-    for (const [text, setText, initialData, fieldName, friendlyName, fieldType] of fieldStates) {
-      const normalizer = normalizers[fieldType]
-      constitutedObject[fieldName] = normalizer ? normalizer(text) : text
-    }
-    const [result, params] = await submitForm(constitutedObject, validator, authenticated)
-    if (result === "SUCCESS") {
-      alert("Indent submitted successfully!")
-      initializeFields()
-    }
-    else if (result === "FAILED") {
-      alert(params)
-    }
-    else if (result === "AUTHENTICATE") {
-      alert("Not implemented.")
-    }
+    },field.initialData, field.name, field.friendlyName, field.fieldType, field.options, field.blobName])
   }
   return (
   <div>
-  {fieldStates.map(([text, setText, initialData, fieldName, friendlyName, fieldType, options], index) => {
+  {fieldStates.map(([text, setText, initialData, fieldName, friendlyName, fieldType, options, blobName], index) => {
     return (
       <div style={formItemStyle} key={index}>
       {fieldType === "datetime" ?
@@ -408,6 +395,30 @@ const FormFactory = ({prefill, fields, defaults, formPersistentStore, validator}
       >
       {options.map((val, index) => (<option key={index} value={val}>{val}</option>))}
       </Material.TextField>)
+      :fieldType === "selectBlob" ? 
+      (textJSON => {
+        const text = JSON.parse(textJSON)
+        return <React.Fragment>
+          <Material.TextField 
+          fullWidth={true}
+          select
+          label={friendlyName}
+          variant="outlined"
+          value={textJSON}
+          SelectProps={{
+            native: true
+          }}
+          onChange={(event) => {wls(fieldName, event.target.value); setText(event.target.value)}}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          style={{maxWidth: "1000px"}}
+          >
+          {(options => text.name === null ? [<option key={-1} value={JSON.stringify({name: null})}></option>, ...options] : options)(blobs[blobName].map((val, index) => (<option key={index} value={JSON.stringify(val)}>{val.name}</option>)))}
+          </Material.TextField>
+          {text.name === null ? null : <React.Fragment><div style={{flexBasis: "100%", height: 0}}/><img src={text.photo} alt={text.name} height={150} width={150}/></React.Fragment>}
+        </React.Fragment>
+      })(text)
       :fieldType === "multi" ?
       (<Material.TextField
       fullWidth={true}
@@ -444,6 +455,7 @@ const normalizers = {
 
 const formItemStyle = {
   display: "flex",
+  flexWrap: "wrap",
   justifyContent: "center",
   paddingLeft: "12px",
   paddingRight: "12px",
@@ -451,12 +463,13 @@ const formItemStyle = {
   paddingBottom: "7px"
 }
 
-const NewIndentView = ({id, cloneID}) => {
+const TeamView = ({id, cloneID}) => {
+  const form = readForm()
   if (detailPersistentStore[id] === undefined) {
     detailPersistentStore[id] = {}
   }
   const prefill = React.useMemo(() => cloneID !== undefined ? readDataStore(cloneID) : undefined, [cloneID, dataDefaults])
-  return (<div style={TransportViewStyle}><div style={{height: "12px"}}/><FormFactory prefill={prefill} fields={formFields} defaults={dataDefaults} formPersistentStore={detailPersistentStore[id]} validator={newIndentValidator}/></div>)
+  return (<div style={TransportViewStyle}><div style={{height: "12px"}}/><FormFactory blobs={form.blobs} prefill={prefill} fields={form.fields} defaults={dataDefaults} formPersistentStore={detailPersistentStore[id]} validator={newIndentValidator}/></div>)
 }
 
 const DEBOUNCE_PERIOD = 100
@@ -763,6 +776,8 @@ const getCallbackSystem = (dataSource) => {
 }
 
 var dataStore = {columns: ["Username", "Total Score", "SAR21", "SAW", "GPMG"], rows: [["PTE A", 500, 300, 100, 100], ["PTE B", 300, 0, 200, 100], ["PTE C", 100, 0, 100, 0]]}
+
+var formStore = {fields: [{name: "sar21", initialData: JSON.stringify({name: null}), friendlyName: "Best SAR21" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "saw", initialData: JSON.stringify({name: null}), friendlyName: "Best SAW" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "gpmg", initialData: JSON.stringify({name: null}), friendlyName: "Best GPMG" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}], data: {}, blobs: {"Soldiers": [{name: "Alpha - PTE 1", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Bravo - PTE 2", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Charlie - PTE 3", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Support - PTE 4", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "MSC - PTE 5", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}]}}
 
 const readNotifications = () => {
   return notificationsStore
