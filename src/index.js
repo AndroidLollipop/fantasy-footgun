@@ -117,6 +117,9 @@ const App = () => {
         </div>),
         (<div label="leaderboard" key="defaultTab1" mykey="defaultTab1">
           <Leaderboard setSelTab={setSelTab} heightProvider={[currentHeight, heightListeners]} transportPersistentStore={militaryPersistentStore.current} />
+        </div>),
+        (<div label="results" key="defaultTab2" myKey="defaultTab2">
+          <Results/>
         </div>), ...tabs.map(({type, params: v}, i) => type === "detail" ? (<DetailGenerator setSelTab={setSelTab} mykey={v[0]} label={readDataStore(v[1]).name} removable="true" removeCallback={(index, length) => {
           removeTab(v[0])
           const currSelTab = Math.min(selTab, length-1)
@@ -416,7 +419,7 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore}) => {
           >
           {(options => text.name === null ? [<option key={-1} value={JSON.stringify({name: null})}></option>, ...options] : options)(blobs[blobName].map((val, index) => (<option key={index} value={JSON.stringify(val)}>{val.name}</option>)))}
           </Material.TextField>
-          {text.name === null ? null : <React.Fragment><div style={{flexBasis: "100%", height: 0}}/><img src={text.photo} alt={text.name} height={150} width={150}/></React.Fragment>}
+          <div style={{flexBasis: "100%", height: 0}}/>{text.name === null ? <div style={{height: 125, width: 125}}/> : <img src={text.photo} alt={text.name} height={125} width={125}/>}
         </React.Fragment>
       })(text)
       :fieldType === "multi" ?
@@ -588,6 +591,21 @@ const Leaderboard = ({setSelTab, heightProvider, transportPersistentStore}) => {
       </Material.Paper>
     </div>
   )
+}
+
+const Results = () => {
+  return <div>
+    <div style={{height: "12px"}}/>
+    <Material.Paper square>
+      <Material.TableContainer>
+        <Material.Table>
+          <Material.TableRow><Material.TableCell align="center">{"Best SAR21"}</Material.TableCell><Material.TableCell align="center">{"TBD"}</Material.TableCell></Material.TableRow>
+          <Material.TableRow><Material.TableCell align="center">{"Best SAW"}</Material.TableCell><Material.TableCell align="center">{"TBD"}</Material.TableCell></Material.TableRow>
+          <Material.TableRow><Material.TableCell align="center">{"Best GPMG"}</Material.TableCell><Material.TableCell align="center">{"TBD"}</Material.TableCell></Material.TableRow>
+        </Material.Table>
+      </Material.TableContainer>
+    </Material.Paper>
+  </div>
 }
 
 const ANIMATION_TIME = 0.075
@@ -834,7 +852,7 @@ const Tabs = ({childWrapper, childContext, children, selTab, setSelTab, appbarRe
   const ChildWrapper = childWrapper
   return (
     <div>
-      <Material.AppBar position="sticky" style={{top: "env(safe-area-inset-top)"}} ref={appbarRef}>
+      <Material.AppBar title={<Material.Typography>Fantasy Skill at Arms</Material.Typography>} position="sticky" style={{top: "env(safe-area-inset-top)"}} ref={appbarRef}>
         <Material.Tabs variant="scrollable" value={Math.min(selTab, children.length-1)+pre.length}>
           {[...pre , ...children.map((child, index) => {
             const obj = {...child.props, removeCallback: () => child.props.removeCallback(index, children.length), onClick: () => {setSelTab(index)}, active: index === Math.min(selTab, children.length-1), key: child.props.mykey}
