@@ -7,7 +7,6 @@ import * as Material from "@material-ui/core"
 import * as Icons from "@material-ui/icons"
 import SearchBar from "material-ui-search-bar"
 
-import appLogo from "./resources/logo.jpg"
 import sir5logo from "./resources/5sirlogo.jpg"
 
 import {ViewState} from "@devexpress/dx-react-scheduler"
@@ -129,8 +128,6 @@ const App = () => {
         }} details={v} key={v[0]} heightProvider={[currentHeight, heightListeners]} />)
         : (<div></div>))]}
       </Tabs>
-      <div style={{height: "12px"}}/>
-      <img src={sir5logo} width="192px"/>
     </div>
   );
 }
@@ -419,7 +416,7 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore}) => {
           >
           {(options => text.name === null ? [<option key={-1} value={JSON.stringify({name: null})}></option>, ...options] : options)(blobs[blobName].map((val, index) => (<option key={index} value={JSON.stringify(val)}>{val.name}</option>)))}
           </Material.TextField>
-          <div style={{flexBasis: "100%", height: 0}}/>{text.name === null ? <div style={{height: 125, width: 125}}/> : <img src={text.photo} height={125} width={125}/>}
+          <div style={{flexBasis: "100%", height: "12px"}}/>{text.name === null ? <div style={{height: 125, width: 125}}/> : <img src={text.photo} height={125} width={125}/>}
         </React.Fragment>
       })(text)
       :fieldType === "multi" ?
@@ -847,7 +844,7 @@ for (const description of [...formFields, ...dataDefaults]) {
 }
 
 const Tabs = ({childWrapper, childContext, children, selTab, setSelTab, appbarRef}) => {
-  const pre = [(<Material.Tab style={{opacity: 1, minWidth: 0, minHeight:0, padding: 0}} disableRipple selected label={<div style={{height: "48px", width: "48px"}}><img src={appLogo} height="48px" width="48px"/></div>}/>), (<Material.Tab label={"fantasy skill at arms"} disableRipple/>)]
+  const pre = [(<Material.Tab style={{opacity: 1, minWidth: 0, minHeight:0, padding: 0}} disableRipple selected label={<div style={{height: "48px", width: "48px"}}><img src={sir5logo} height="48px" width="48px"/></div>}/>), (<Material.Tab label={"fantasy skill at arms"} disableRipple/>)]
   const post = []
   const ChildWrapper = childWrapper
   return (
