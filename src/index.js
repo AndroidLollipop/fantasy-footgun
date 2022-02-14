@@ -117,7 +117,7 @@ const App = () => {
         (<div label="leaderboard" key="defaultTab1" mykey="defaultTab1">
           <Leaderboard setSelTab={setSelTab} heightProvider={[currentHeight, heightListeners]} transportPersistentStore={militaryPersistentStore.current} />
         </div>),
-        (<div label="results" key="defaultTab2" myKey="defaultTab2">
+        (<div label="station winners" key="defaultTab2" myKey="defaultTab2">
           <Results/>
         </div>), ...tabs.map(({type, params: v}, i) => type === "detail" ? (<DetailGenerator setSelTab={setSelTab} mykey={v[0]} label={readDataStore(v[1]).name} removable="true" removeCallback={(index, length) => {
           removeTab(v[0])
@@ -317,7 +317,7 @@ const TeamDisplay = (rawData) => {
   return <div>
     <div>
       <div style={formItemStyle}>
-        <Material.Typography>{`Nickname: ${data.nickname}`}</Material.Typography>
+        <Material.Typography>{`Name: ${data.nickname}`}</Material.Typography>
       </div>
       <div style={formItemStyle}>
         <Material.Typography>{`SAR21: ${JSON.parse(data.sar21).name}`}</Material.Typography>
@@ -829,9 +829,9 @@ const getCallbackSystem = (dataSource) => {
   return [registerCallback, deregisterCallback, notifyNewData]
 }
 
-var dataStore = {columns: ["Nickname", "Total Score", "SAR21", "SAW", "GPMG"], rows: [["PTE A", 500, 300, 100, 100], ["PTE B", 300, 0, 200, 100], ["PTE C", 100, 0, 100, 0]]}
+var dataStore = {columns: ["Name", "Total Score", "SAR21", "SAW", "GPMG"], rows: [["PTE A", 3, 1, 1, 1], ["PTE B", 2, 0, 1, 1], ["PTE C", 1, 0, 1, 0]]}
 
-var formStore = {fields: [{name: "nickname", initialData: "", friendlyName: "Nickname", fieldType: "single"}, {name: "sar21", initialData: JSON.stringify({name: null}), friendlyName: "Best SAR21" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "saw", initialData: JSON.stringify({name: null}), friendlyName: "Best SAW" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "gpmg", initialData: JSON.stringify({name: null}), friendlyName: "Best GPMG" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}], data: {}, blobs: {"Soldiers": [{name: "Alpha - PTE 1", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Bravo - PTE 2", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Charlie - PTE 3", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Support - PTE 4", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "MSC - PTE 5", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}]}}
+var formStore = {fields: [{name: "nickname", initialData: "", friendlyName: "Name", fieldType: "single"}, {name: "sar21", initialData: JSON.stringify({name: null}), friendlyName: "Best SAR21" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "saw", initialData: JSON.stringify({name: null}), friendlyName: "Best SAW" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "gpmg", initialData: JSON.stringify({name: null}), friendlyName: "Best GPMG" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}], data: {}, blobs: {"Soldiers": [{name: "Alpha - PTE 1", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Bravo - PTE 2", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Charlie - PTE 3", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Support - PTE 4", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "MSC - PTE 5", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}]}}
 
 const readNotifications = () => {
   return notificationsStore
