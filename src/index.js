@@ -22,7 +22,7 @@ import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
 import AddIcon from "@material-ui/icons/Add"
 
-const VERSION_NUMBER = "fantasy-footgun 0.1.0a"
+const VERSION_NUMBER = "fantasy-footgun 0.1.1a"
 console.log(VERSION_NUMBER)
 
 const ranker = require("./searchRanker.js")
@@ -442,7 +442,7 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
           >
           {(options => text.name === null ? [<option key={-1} value={JSON.stringify({name: null})}></option>, ...options] : options)(blobs[blobName].map((val, index) => (<option key={index} value={JSON.stringify(val)}>{val.name}</option>)))}
           </Material.TextField>
-          <div style={{flexBasis: "100%", height: "12px"}}/>{text.name === null ? <div style={{height: 125, width: 125}}/> : <img src={text.photo} height={125} width={125}/>}
+          <div style={{flexBasis: "100%", height: "12px"}}/>{text.name === null ? <div style={{height: 125}}/> : <img src={text.photo} height={125}/>}
         </React.Fragment>
       })(text)
       :fieldType === "multi" ?
