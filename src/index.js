@@ -831,7 +831,13 @@ const getCallbackSystem = (dataSource) => {
 
 var dataStore = {columns: ["Name", "Total Score", "SAR21", "SAW", "GPMG"], rows: [["PTE A", 3, 1, 1, 1], ["PTE B", 2, 0, 1, 1], ["PTE C", 1, 0, 1, 0]]}
 
-var formStore = {fields: [{name: "nickname", initialData: "", friendlyName: "Name", fieldType: "single"}, {name: "sar21", initialData: JSON.stringify({name: null}), friendlyName: "Best SAR21" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "saw", initialData: JSON.stringify({name: null}), friendlyName: "Best SAW" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "gpmg", initialData: JSON.stringify({name: null}), friendlyName: "Best GPMG" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}], data: {}, blobs: {"Soldiers": [{name: "Alpha - PTE 1", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Bravo - PTE 2", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Charlie - PTE 3", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "Support - PTE 4", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}, {name: "MSC - PTE 5", photo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"}]}}
+var formStore = {fields: [{name: "nickname", initialData: "", friendlyName: "Name", fieldType: "single"}, {name: "sar21", initialData: JSON.stringify({name: null}), friendlyName: "Best SAR21" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "saw", initialData: JSON.stringify({name: null}), friendlyName: "Best SAW" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "gpmg", initialData: JSON.stringify({name: null}), friendlyName: "Best GPMG" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}], data: {}, blobs: {"Soldiers": [
+  {name: "Alpha - PTE 1", photo: "https://i.pinimg.com/originals/3e/37/24/3e3724692c15d28f12a4c7bc6fe0b945.jpg"},
+  {name: "Bravo - PTE 2", photo: "https://scontent.fsin13-1.fna.fbcdn.net/v/t1.6435-9/64861023_2345584528868126_2696896092137586688_n.jpg?_nc_cat=107&ccb=1-5&_nc_sid=174925&_nc_ohc=kUjXJTOpnBwAX-aymIb&_nc_ht=scontent.fsin13-1.fna&oh=00_AT80RHyc6Z9aJrAh8nXipP93by8NOtWDXFiVM6iktKjBfg&oe=62306048"},
+  {name: "Charlie - PTE 3", photo: "https://i.pinimg.com/280x280_RS/d2/ab/39/d2ab39788ec4254ab7761317448f5da3.jpg"},
+  {name: "Support - PTE 4", photo: "https://c8.alamy.com/comp/D198EY/a-balinese-man-in-a-singapore-army-camo-shirt-D198EY.jpg"},
+  {name: "MSC - PTE 5", photo: "https://www.janes.com/images/default-source/news-images/fg_3808936-idr-9354.jpg?sfvrsn=b60dfede_2"}
+]}}
 
 const readNotifications = () => {
   return notificationsStore
