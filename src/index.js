@@ -22,6 +22,7 @@ import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
 import AddIcon from "@material-ui/icons/Add"
 
+const SCHEMA = "0.1.1a"
 const VERSION_NUMBER = "fantasy-footgun 0.1.1a"
 console.log(VERSION_NUMBER)
 
@@ -305,10 +306,14 @@ const submitForm = async (data, validator, authenticated) => {
 }
 
 const rls = (key) => {
+  if (window.localStorage.getItem(`ALFGschema`) !== SCHEMA) {
+    window.localStorage.removeItem(`ALFG${key}`)
+  }
   return window.localStorage.getItem(`ALFG${key}`)
 }
 
 const wls = (key, item) => {
+  window.localStorage.setItem(`ALFGschema`, SCHEMA)
   window.localStorage.setItem(`ALFG${key}`, item)
 }
 
