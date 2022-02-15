@@ -23,7 +23,7 @@ import ListIcon from "@material-ui/icons/List"
 import AddIcon from "@material-ui/icons/Add"
 
 const SCHEMA = "0.1.1a"
-const VERSION_NUMBER = "fantasy-footgun 0.1.1a"
+const VERSION_NUMBER = "fantasy-footgun 0.1.2a"
 console.log(VERSION_NUMBER)
 
 const ranker = require("./searchRanker.js")
@@ -306,15 +306,15 @@ const submitForm = async (data, validator, authenticated) => {
 }
 
 const rls = (key) => {
-  if (window.localStorage.getItem(`ALFGschema`) !== SCHEMA) {
-    window.localStorage.removeItem(`ALFG${key}`)
+  if (window.localStorage.getItem(`ALFG:schema`) !== SCHEMA) {
+    window.localStorage.removeItem(`ALFG:data:${key}`)
   }
-  return window.localStorage.getItem(`ALFG${key}`)
+  return window.localStorage.getItem(`ALFG:data:${key}`)
 }
 
 const wls = (key, item) => {
-  window.localStorage.setItem(`ALFGschema`, SCHEMA)
-  window.localStorage.setItem(`ALFG${key}`, item)
+  window.localStorage.setItem(`ALFG:schema`, SCHEMA)
+  window.localStorage.setItem(`ALFG:data:${key}`, item)
 }
 
 const TeamDisplay = (rawData) => {
