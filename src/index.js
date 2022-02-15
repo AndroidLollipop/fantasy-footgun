@@ -317,8 +317,7 @@ const wls = (key, item) => {
   window.localStorage.setItem(`ALFG:data:${key}`, item)
 }
 
-const TeamDisplay = (rawData) => {
-  const data = rawData.data
+const TeamDisplay = ({data, setTd}) => {
   return <div>
     <div>
       <div style={formItemStyle}>
@@ -339,6 +338,9 @@ const TeamDisplay = (rawData) => {
         <div style={{flexBasis: "100%", height: "12px"}}/>
         <img src={JSON.parse(data.gpmg).photo} height={125}/>
       </div>
+      <div style={{height: "12px"}}/>  
+      <Material.Button variant="outlined" onClick={() => setTd(false)}>edit team</Material.Button>
+      <div style={{height:"48px"}}/>
     </div>
   </div>
 }
@@ -502,6 +504,7 @@ const TeamView = ({id, cloneID}) => {
   React.useEffect(() => {
     const callbackID = registerForm(value => {
       setRl(value)
+      setTd(true)
     })
     return () => deregisterForm(callbackID)
   }, [])
@@ -509,11 +512,12 @@ const TeamView = ({id, cloneID}) => {
   if (detailPersistentStore[id] === undefined) {
     detailPersistentStore[id] = {}
   }
-  const [rl, setRl] = React.useState(rls("locked"))
+  const [rl, setRl] = React.useState(readSubmitted())
   const prefill = React.useMemo(() => {
     return rl ? JSON.parse(rl) : undefined
   }, [rl])
-  return (<div style={TransportViewStyle}><div style={{height: "12px"}}/>{rl ? <TeamDisplay data={prefill}/> : <FormFactory blobs={form.blobs} prefill={prefill} fields={form.fields} defaults={dataDefaults} formPersistentStore={detailPersistentStore[id]} validator={teamValidator}/>}</div>)
+  const [td, setTd] = React.useState(!!rl)
+  return (<div style={TransportViewStyle}><div style={{height: "12px"}}/>{td ? <TeamDisplay data={prefill} setTd={setTd}/> : <FormFactory blobs={form.blobs} prefill={prefill} fields={form.fields} defaults={dataDefaults} formPersistentStore={detailPersistentStore[id]} validator={teamValidator}/>}</div>)
 }
 
 const DEBOUNCE_PERIOD = 100
