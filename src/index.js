@@ -442,7 +442,7 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
           >
           {(options => text.name === null ? [<option key={-1} value={JSON.stringify({name: null})}></option>, ...options] : options)(blobs[blobName].map((val, index) => (<option key={index} value={JSON.stringify(val)}>{val.name}</option>)))}
           </Material.TextField>
-          <div style={{flexBasis: "100%", height: "12px"}}/>{text.name === null ? <div style={{height: 125}}/> : <img src={text.photo} height={125}/>}
+          <div style={{flexBasis: "100%", height: "12px"}}/>{text.name === null ? <div style={{height: 125, width: 1}}/> : <img src={text.photo} height={125}/>}
         </React.Fragment>
       })(text)
       :fieldType === "multi" ?
