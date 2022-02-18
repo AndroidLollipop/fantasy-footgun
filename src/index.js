@@ -123,6 +123,11 @@ const App = () => {
   );
 }
 
+const renderName = (blobs, name) => {
+  const blobName = blobs.find(x => x.name === name)?.fullName
+  return typeof blobName === "string" ? blobName : name
+}
+
 const NotificationsPanel = () => {
   var myData = readNotifications()
   const [data, setData] = React.useState(myData)
@@ -130,11 +135,12 @@ const NotificationsPanel = () => {
     const callbackID = registerNotify(setData)
     return () => deregisterNotify(callbackID)
   }, [])
+  const form = readForm()
   return (
     <div>
       <div style={{height: "12px"}}/>
       <Material.Paper square>
-        <ListFactory data={data} generator={item => <Material.TableRow><Material.TableCell align="center">{item.category}</Material.TableCell><Material.TableCell align="center">{item.winner}</Material.TableCell></Material.TableRow>} style={TransportViewStyle}/>
+        <ListFactory data={data} generator={item => <Material.TableRow><Material.TableCell align="center">{item.category}</Material.TableCell><Material.TableCell align="center">{renderName(form.blobs["Soldiers"], item.winner)}</Material.TableCell></Material.TableRow>} style={TransportViewStyle}/>
       </Material.Paper>
     </div>
   )
@@ -238,6 +244,21 @@ const appendDataStore = async (write) => {
   const myPromise = new Promise(v => resolve=v)
   pendingWrites[currWriteToken] = resolve
   socket.emit("appendDataStore", [write, currWriteToken])
+  await myPromise
+  if (currWriteToken === ackWriteToken) {
+    return true
+  }
+  else {
+    return false
+  }
+}
+
+const appendSubmission = async (write) => {
+  currWriteToken++
+  var resolve
+  const myPromise = new Promise(v => resolve=v)
+  pendingWrites[currWriteToken] = resolve
+  socket.emit("appendSubmission", write, currWriteToken)
   await myPromise
   if (currWriteToken === ackWriteToken) {
     return true
@@ -365,6 +386,7 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
       alert(res[1])
       return
     }
+    appendSubmission(constitutedObject)
     const str = JSON.stringify(constitutedObject)
     wls("locked", str)
     notifyNewForm(str)
@@ -802,11 +824,11 @@ const getCallbackSystem = (dataSource) => {
 var dataStore = {columns: [], rows: []}
 
 var formStore = {fields: [{name: "nickname", initialData: "", friendlyName: "Name", fieldType: "single"}, {name: "sar21", initialData: null, friendlyName: "Best SAR21" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "saw", initialData: null, friendlyName: "Best SAW" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "gpmg", initialData: null, friendlyName: "Best GPMG" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}], data: {}, blobs: {"Soldiers": [
-  {name: "Alpha", friendlyName: "Alpha - PTE 1", photo: "https://i.pinimg.com/originals/3e/37/24/3e3724692c15d28f12a4c7bc6fe0b945.jpg"},
-  {name: "Bravo", friendlyName: "Bravo - PTE 2", photo: "https://scontent.fsin13-1.fna.fbcdn.net/v/t1.6435-9/64861023_2345584528868126_2696896092137586688_n.jpg?_nc_cat=107&ccb=1-5&_nc_sid=174925&_nc_ohc=kUjXJTOpnBwAX-aymIb&_nc_ht=scontent.fsin13-1.fna&oh=00_AT80RHyc6Z9aJrAh8nXipP93by8NOtWDXFiVM6iktKjBfg&oe=62306048"},
-  {name: "Charlie", friendlyName: "Charlie - PTE 3", photo: "https://i.pinimg.com/280x280_RS/d2/ab/39/d2ab39788ec4254ab7761317448f5da3.jpg"},
-  {name: "Support", friendlyName: "Support - PTE 4", photo: "https://c8.alamy.com/comp/D198EY/a-balinese-man-in-a-singapore-army-camo-shirt-D198EY.jpg"},
-  {name: "MSC", friendlyName: "MSC - PTE 5", photo: "https://www.janes.com/images/default-source/news-images/fg_3808936-idr-9354.jpg?sfvrsn=b60dfede_2"}
+  {name: "Alpha", fullName: "PTE 1", friendlyName: "Alpha - PTE 1", photo: "https://i.pinimg.com/originals/3e/37/24/3e3724692c15d28f12a4c7bc6fe0b945.jpg"},
+  {name: "Bravo", fullName: "PTE 2", friendlyName: "Bravo - PTE 2", photo: "https://scontent.fsin13-1.fna.fbcdn.net/v/t1.6435-9/64861023_2345584528868126_2696896092137586688_n.jpg?_nc_cat=107&ccb=1-5&_nc_sid=174925&_nc_ohc=kUjXJTOpnBwAX-aymIb&_nc_ht=scontent.fsin13-1.fna&oh=00_AT80RHyc6Z9aJrAh8nXipP93by8NOtWDXFiVM6iktKjBfg&oe=62306048"},
+  {name: "Charlie", fullName: "PTE 3", friendlyName: "Charlie - PTE 3", photo: "https://i.pinimg.com/280x280_RS/d2/ab/39/d2ab39788ec4254ab7761317448f5da3.jpg"},
+  {name: "Support", fullName: "PTE 4", friendlyName: "Support - PTE 4", photo: "https://c8.alamy.com/comp/D198EY/a-balinese-man-in-a-singapore-army-camo-shirt-D198EY.jpg"},
+  {name: "MSC", fullName: "PTE 5", friendlyName: "MSC - PTE 5", photo: "https://www.janes.com/images/default-source/news-images/fg_3808936-idr-9354.jpg?sfvrsn=b60dfede_2"}
 ]}}
 
 const readNotifications = () => {
