@@ -283,7 +283,7 @@ const readSubmitted = () => {
 const teamValidator = data => {
   for (const field in data) {
     const val = data[field]
-    if (!val || typeof val === "string" && (val.length === 0 || val === JSON.stringify({name: null}))) {
+    if (!val || typeof val === "string" && val.length === 0) {
       return ["FAILED", "Please fill in all fields"]
     }
   }
@@ -313,6 +313,7 @@ const rls = (key) => {
 }
 
 const wls = (key, item) => {
+  console.log(item)
   window.localStorage.setItem(`ALFG:schema`, SCHEMA)
   window.localStorage.setItem(`ALFG:data:${key}`, item)
 }
