@@ -9,18 +9,8 @@ import SearchBar from "material-ui-search-bar"
 
 import sir5logo from "./resources/5sirlogo.jpg"
 
-import {ViewState} from "@devexpress/dx-react-scheduler"
-import {
-  Scheduler,
-  MonthView,
-  Appointments,
-  Toolbar,
-  DateNavigator
-} from "@devexpress/dx-react-scheduler-material-ui"
-
 import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
-import AddIcon from "@material-ui/icons/Add"
 
 const SCHEMA = "0.1.1b"
 const VERSION_NUMBER = "fantasy-footgun 0.1.2a"
@@ -83,7 +73,7 @@ const App = () => {
       notifyNewData()
     })
     socket.on("sendNotifications", (notifications) => {
-      notificationsStore = [...notifications].reverse()
+      notificationsStore = [...notifications]
       notifyNewN()
     })
     socket.emit("requestIndents", "")
