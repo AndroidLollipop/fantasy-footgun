@@ -59,22 +59,36 @@ const App = () => {
   setTabs = mySetTabs
   React.useEffect(() => {
     socket = socketIOClient(serverURL, {secure: true});
-    socket.on("sendIndents", (indents, writeToken) => {
-      if (writeToken !== undefined) {
-        if (writeToken < ackWriteToken) {
-          return
-        }
-        ackWriteToken = writeToken
-        if (pendingWrites[writeToken] !== undefined) {
-          pendingWrites[writeToken]()
-        }
-      }
+    socket.on("sendIndents", (indents) => {
       dataStore = {...indents}
       notifyNewData()
     })
     socket.on("sendNotifications", (notifications) => {
       notificationsStore = [...notifications]
       notifyNewN()
+    })
+    socket.on("commit", (writeToken, authToken) => {
+      if (writeToken !== undefined) {
+        if (writeToken < ackWriteToken) {
+          return
+        }
+        ackWriteToken = writeToken
+        if (pendingWrites[writeToken] !== undefined) {
+          pendingWrites[writeToken]([true, authToken])
+        }
+      }
+    })
+    socket.on("fail", (msg, writeToken) => {
+      alert(msg)
+      if (writeToken !== undefined) {
+        if (writeToken < ackWriteToken) {
+          return
+        }
+        ackWriteToken = writeToken
+        if (pendingWrites[writeToken] !== undefined) {
+          pendingWrites[writeToken]([false, null])
+        }
+      }
     })
     socket.emit("requestIndents", "")
     socket.emit("requestNotifications", "")
@@ -110,14 +124,7 @@ const App = () => {
         </div>),
         (<div label="station winners" key="defaultTab2" myKey="defaultTab2">
           <NotificationsPanel/>
-        </div>), ...tabs.map(({type, params: v}, i) => type === "detail" ? (<DetailGenerator setSelTab={setSelTab} mykey={v[0]} label={readDataStore(v[1]).name} removable="true" removeCallback={(index, length) => {
-          removeTab(v[0])
-          const currSelTab = Math.min(selTab, length-1)
-          if (currSelTab > index) {
-            setSelTab(currSelTab-1)
-          }
-        }} details={v} key={v[0]} heightProvider={[currentHeight, heightListeners]} />)
-        : (<div></div>))]}
+        </div>), ...tabs.map(({type, params: v}, i) => (<div></div>))]}
       </Tabs>
     </div>
   );
@@ -148,67 +155,6 @@ const NotificationsPanel = () => {
 
 const detailPersistentStore = {}
 
-const DetailGenerator = ({setSelTab, details, heightProvider}) => {
-  const [id, index] = details
-  if (detailPersistentStore[id] === undefined) {
-    detailPersistentStore[id] = readDataStore(index)
-  }
-  const [data, setData] = React.useState(detailPersistentStore[id])
-  const edit = async () => {
-    const result = await editData(index, detailPersistentStore[id])
-    if (result === true) {
-      alert("Indent saved successfully!")
-    }
-  }
-  return (
-  <div>
-    <div style={{height:"12px"}}/>
-    <Material.Paper square>
-      <ListFactory header={(<MyStickyHeader heightProvider={heightProvider}>{detailFields.map((x, index) => (<Material.TableCell key={index}>{x.friendlyName}</Material.TableCell>))}</MyStickyHeader>)} data={[data]} generator={x => detailItemGenerator(x, x.internalUID)} style={TransportViewStyle}/>
-    </Material.Paper>
-    <div style={{height:"12px"}}/>
-    <Material.Button variant="outlined" onClick={() => {
-      addNewTab(data.internalUID)
-      setSelTab(Infinity)
-    }}>Copy</Material.Button>
-    <div style={{height:"12px"}}/>
-    <div>
-      <div style={{display:"inline", verticalAlign:"middle"}}>
-        <div style={formItemStyle}>
-          <Material.TextField fullWidth={true} multiline label={"Additional Info"} variant="outlined" value={data.addInfo} onChange={(event) => {
-            detailPersistentStore[id] = {...detailPersistentStore[id], addInfo: event.target.value}
-            setData(detailPersistentStore[id])
-          }} InputLabelProps={{shrink: true,}} style={{maxWidth: "1000px"}}/>
-        </div>
-      </div>
-    </div>
-    <div style={{height:"12px"}}/>
-    <div>
-      <div style={{display:"inline", verticalAlign:"middle"}}>
-        <Material.Select variant="outlined" native value={data.status} onChange={(event) => {
-          detailPersistentStore[id] = {...detailPersistentStore[id], status: event.target.value}
-          setData(detailPersistentStore[id])
-        }}>
-        {statuses.map((val, index) => (<option key={index} value={val}>{val}</option>))}
-        </Material.Select>
-      </div>
-      <div style={{display:"inline-block", width:"1px"}}/>
-      <div style={{display:"inline", verticalAlign:"middle"}}>
-        <Material.Button variant="outlined" onClick={edit}>Save</Material.Button>
-      </div>
-    </div>
-  </div>
-  )
-}
-
-const editData = async (index, newData) => {
-  const refresh = await writeDataStore(index, newData)
-  if (refresh) {
-    notifyNewData()
-  }
-  return refresh
-}
-
 const readDataStore = (internalUID) => {
   const result = dataStore.filter(x => x.internalUID === internalUID)
   if (result.length === 0) {
@@ -223,49 +169,21 @@ var ackWriteToken = 0
 var currWriteToken = 0
 var pendingWrites = []
 
-const writeDataStore = async (internalUID, write) => {
-  currWriteToken++
-  var resolve
-  const myPromise = new Promise(v => resolve=v)
-  pendingWrites[currWriteToken] = resolve
-  socket.emit("writeDataStore", [internalUID, write, currWriteToken])
-  await myPromise
-  if (currWriteToken === ackWriteToken) {
-    return true
-  }
-  else {
-    return false
-  }
-}
+var reqInProgress = false
 
-const appendDataStore = async (write) => {
+const appendSubmission = async (write, authToken) => {
+  if (reqInProgress) {
+    return [false, null]
+  }
+  reqInProgress = true
   currWriteToken++
   var resolve
   const myPromise = new Promise(v => resolve=v)
   pendingWrites[currWriteToken] = resolve
-  socket.emit("appendDataStore", [write, currWriteToken])
-  await myPromise
-  if (currWriteToken === ackWriteToken) {
-    return true
-  }
-  else {
-    return false
-  }
-}
-
-const appendSubmission = async (write) => {
-  currWriteToken++
-  var resolve
-  const myPromise = new Promise(v => resolve=v)
-  pendingWrites[currWriteToken] = resolve
-  socket.emit("appendSubmission", write, currWriteToken)
-  await myPromise
-  if (currWriteToken === ackWriteToken) {
-    return true
-  }
-  else {
-    return false
-  }
+  socket.emit("appendSubmission", write, currWriteToken, authToken)
+  const ret = await myPromise
+  reqInProgress = false
+  return ret
 }
 
 const readRange = () => {
@@ -288,21 +206,6 @@ const teamValidator = data => {
     }
   }
   return ["SUCCESS"]
-}
-
-const submitForm = async (data, validator, authenticated) => {
-  if (typeof validator === "function") {
-    const validated = validator(data, authenticated)
-    if (validated[0] !== "SUCCESS") {
-      return validated
-    }
-  }
-  const refresh = await appendDataStore(data)
-  if (refresh) {
-    notifyNewData()
-    return ["SUCCESS"]
-  }
-  return ["UNKNOWN"]
 }
 
 const rls = (key) => {
@@ -386,10 +289,14 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
       alert(res[1])
       return
     }
-    appendSubmission(constitutedObject)
-    const str = JSON.stringify(constitutedObject)
-    wls("locked", str)
-    notifyNewForm(str)
+    const [success, authToken] = await appendSubmission(constitutedObject, JSON.parse(rls("token")))
+    if (success) {
+      const fStr = JSON.stringify(constitutedObject)
+      const aStr = JSON.stringify(authToken)
+      wls("locked", fStr)
+      wls("token", aStr)
+      notifyNewForm(fStr)
+    }
   }
   return (
   <div>
