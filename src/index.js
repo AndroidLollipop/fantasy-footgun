@@ -22,7 +22,7 @@ import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
 import AddIcon from "@material-ui/icons/Add"
 
-const SCHEMA = "0.1.1a"
+const SCHEMA = "0.1.1b"
 const VERSION_NUMBER = "fantasy-footgun 0.1.2a"
 console.log(VERSION_NUMBER)
 
@@ -317,26 +317,26 @@ const wls = (key, item) => {
   window.localStorage.setItem(`ALFG:data:${key}`, item)
 }
 
-const TeamDisplay = ({data, setTd}) => {
+const TeamDisplay = ({blobs, data, setTd}) => {
   return <div>
     <div>
       <div style={formItemStyle}>
         <Material.Typography>{`Name: ${data.nickname}`}</Material.Typography>
       </div>
       <div style={formItemStyle}>
-        <Material.Typography>{`SAR21: ${JSON.parse(data.sar21).name}`}</Material.Typography>
+        <Material.Typography>{`SAR21: ${blobs["Soldiers"].find(x => x.name === data.sar21)?.friendlyName}`}</Material.Typography>
         <div style={{flexBasis: "100%", height: "12px"}}/>
-        <img src={JSON.parse(data.sar21).photo} height={125}/>
+        <img src={blobs["Soldiers"].find(x => x.name === data.sar21)?.photo} height={125}/>
       </div>
       <div style={formItemStyle}>
-        <Material.Typography>{`SAW: ${JSON.parse(data.saw).name}`}</Material.Typography>
+        <Material.Typography>{`SAW: ${blobs["Soldiers"].find(x => x.name === data.saw)?.friendlyName}`}</Material.Typography>
         <div style={{flexBasis: "100%", height: "12px"}}/>
-        <img src={JSON.parse(data.saw).photo} height={125}/>
+        <img src={blobs["Soldiers"].find(x => x.name === data.saw)?.photo} height={125}/>
       </div>
       <div style={formItemStyle}>
-        <Material.Typography>{`GPMG: ${JSON.parse(data.gpmg).name}`}</Material.Typography>
+        <Material.Typography>{`GPMG: ${blobs["Soldiers"].find(x => x.name === data.gpmg)?.friendlyName}`}</Material.Typography>
         <div style={{flexBasis: "100%", height: "12px"}}/>
-        <img src={JSON.parse(data.gpmg).photo} height={125}/>
+        <img src={blobs["Soldiers"].find(x => x.name === data.gpmg)?.photo} height={125}/>
       </div>
       <div style={{height: "12px"}}/>  
       <Material.Button variant="outlined" onClick={() => setTd(false)}>edit team</Material.Button>
@@ -429,29 +429,26 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
       {options.map((val, index) => (<option key={index} value={val}>{val}</option>))}
       </Material.TextField>)
       :fieldType === "selectBlob" ? 
-      (textJSON => {
-        const text = JSON.parse(textJSON)
-        return <React.Fragment>
-          <Material.TextField 
-          fullWidth={true}
-          select
-          label={friendlyName}
-          variant="outlined"
-          value={textJSON}
-          SelectProps={{
-            native: true
-          }}
-          onChange={(event) => setText(event.target.value)}
-          InputLabelProps={{
-            shrink: true,
-          }}
-          style={{maxWidth: "1000px"}}
-          >
-          {(options => text.name === null ? [<option key={-1} value={JSON.stringify({name: null})}></option>, ...options] : options)(blobs[blobName].map((val, index) => (<option key={index} value={JSON.stringify(val)}>{val.name}</option>)))}
-          </Material.TextField>
-          <div style={{flexBasis: "100%", height: "12px"}}/>{text.name === null ? <div style={{height: 125, width: 1}}/> : <img src={text.photo} height={125}/>}
-        </React.Fragment>
-      })(text)
+      (<React.Fragment>
+        <Material.TextField 
+        fullWidth={true}
+        select
+        label={friendlyName}
+        variant="outlined"
+        value={text}
+        SelectProps={{
+          native: true
+        }}
+        onChange={(event) => setText(event.target.value)}
+        InputLabelProps={{
+          shrink: true,
+        }}
+        style={{maxWidth: "1000px"}}
+        >
+        {(options => text === null ? [<option key={-1} value={null}></option>, ...options] : options)(blobs[blobName].map((val, index) => (<option key={index} value={val.name}>{val.friendlyName}</option>)))}
+        </Material.TextField>
+        <div style={{flexBasis: "100%", height: "12px"}}/>{text === null ? <div style={{height: 125, width: 1}}/> : <img src={blobs[blobName].find(x => x.name === text)?.photo} height={125}/>}
+      </React.Fragment>)
       :fieldType === "multi" ?
       (<Material.TextField
       fullWidth={true}
@@ -517,7 +514,7 @@ const TeamView = ({id, cloneID}) => {
     return rl ? JSON.parse(rl) : undefined
   }, [rl])
   const [td, setTd] = React.useState(!!rl)
-  return (<div style={TransportViewStyle}><div style={{height: "12px"}}/>{td ? <TeamDisplay data={prefill} setTd={setTd}/> : <FormFactory blobs={form.blobs} prefill={prefill} fields={form.fields} defaults={dataDefaults} formPersistentStore={detailPersistentStore[id]} validator={teamValidator}/>}</div>)
+  return (<div style={TransportViewStyle}><div style={{height: "12px"}}/>{td ? <TeamDisplay blobs={form.blobs} data={prefill} setTd={setTd}/> : <FormFactory blobs={form.blobs} prefill={prefill} fields={form.fields} defaults={dataDefaults} formPersistentStore={detailPersistentStore[id]} validator={teamValidator}/>}</div>)
 }
 
 const DEBOUNCE_PERIOD = 100
@@ -840,12 +837,12 @@ const getCallbackSystem = (dataSource) => {
 
 var dataStore = {columns: ["Name", "Total Score", "SAR21", "SAW", "GPMG"], rows: [["PTE A", 3, 1, 1, 1], ["PTE B", 2, 0, 1, 1], ["PTE C", 1, 0, 1, 0]]}
 
-var formStore = {fields: [{name: "nickname", initialData: "", friendlyName: "Name", fieldType: "single"}, {name: "sar21", initialData: JSON.stringify({name: null}), friendlyName: "Best SAR21" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "saw", initialData: JSON.stringify({name: null}), friendlyName: "Best SAW" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "gpmg", initialData: JSON.stringify({name: null}), friendlyName: "Best GPMG" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}], data: {}, blobs: {"Soldiers": [
-  {name: "Alpha - PTE 1", photo: "https://i.pinimg.com/originals/3e/37/24/3e3724692c15d28f12a4c7bc6fe0b945.jpg"},
-  {name: "Bravo - PTE 2", photo: "https://scontent.fsin13-1.fna.fbcdn.net/v/t1.6435-9/64861023_2345584528868126_2696896092137586688_n.jpg?_nc_cat=107&ccb=1-5&_nc_sid=174925&_nc_ohc=kUjXJTOpnBwAX-aymIb&_nc_ht=scontent.fsin13-1.fna&oh=00_AT80RHyc6Z9aJrAh8nXipP93by8NOtWDXFiVM6iktKjBfg&oe=62306048"},
-  {name: "Charlie - PTE 3", photo: "https://i.pinimg.com/280x280_RS/d2/ab/39/d2ab39788ec4254ab7761317448f5da3.jpg"},
-  {name: "Support - PTE 4", photo: "https://c8.alamy.com/comp/D198EY/a-balinese-man-in-a-singapore-army-camo-shirt-D198EY.jpg"},
-  {name: "MSC - PTE 5", photo: "https://www.janes.com/images/default-source/news-images/fg_3808936-idr-9354.jpg?sfvrsn=b60dfede_2"}
+var formStore = {fields: [{name: "nickname", initialData: "", friendlyName: "Name", fieldType: "single"}, {name: "sar21", initialData: null, friendlyName: "Best SAR21" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "saw", initialData: null, friendlyName: "Best SAW" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "gpmg", initialData: null, friendlyName: "Best GPMG" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}], data: {}, blobs: {"Soldiers": [
+  {name: "Alpha", friendlyName: "Alpha - PTE 1", photo: "https://i.pinimg.com/originals/3e/37/24/3e3724692c15d28f12a4c7bc6fe0b945.jpg"},
+  {name: "Bravo", friendlyName: "Bravo - PTE 2", photo: "https://scontent.fsin13-1.fna.fbcdn.net/v/t1.6435-9/64861023_2345584528868126_2696896092137586688_n.jpg?_nc_cat=107&ccb=1-5&_nc_sid=174925&_nc_ohc=kUjXJTOpnBwAX-aymIb&_nc_ht=scontent.fsin13-1.fna&oh=00_AT80RHyc6Z9aJrAh8nXipP93by8NOtWDXFiVM6iktKjBfg&oe=62306048"},
+  {name: "Charlie", friendlyName: "Charlie - PTE 3", photo: "https://i.pinimg.com/280x280_RS/d2/ab/39/d2ab39788ec4254ab7761317448f5da3.jpg"},
+  {name: "Support", friendlyName: "Support - PTE 4", photo: "https://c8.alamy.com/comp/D198EY/a-balinese-man-in-a-singapore-army-camo-shirt-D198EY.jpg"},
+  {name: "MSC", friendlyName: "MSC - PTE 5", photo: "https://www.janes.com/images/default-source/news-images/fg_3808936-idr-9354.jpg?sfvrsn=b60dfede_2"}
 ]}}
 
 const readNotifications = () => {
