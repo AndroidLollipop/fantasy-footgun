@@ -13,7 +13,7 @@ import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
 
 const SCHEMA = "0.1.5a"
-const VERSION_NUMBER = "fantasy-footgun 0.1.6a"
+const VERSION_NUMBER = "fantasy-footgun 0.1.7a"
 console.log(VERSION_NUMBER)
 
 const ranker = require("./searchRanker.js")
@@ -235,7 +235,7 @@ const dls = (key, item) => {
 }
 
 const TeamDisplay = ({blobs, data, setTd}) => {
-  return <div>
+  return data === undefined ? <div/> : <div>
     <div>
       <div style={formItemStyle}>
         <Material.Typography>{`Name: ${data.nickname}`}</Material.Typography>
