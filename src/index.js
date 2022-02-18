@@ -90,8 +90,18 @@ const App = () => {
         }
       }
     })
+    socket.on("sendEraseEpoch", (eraseEpoch) => {
+      const myEpoch = rls("eraseEpoch")
+      wls("eraseEpoch", JSON.stringify(eraseEpoch))
+      if (myEpoch !== undefined && JSON.parse(myEpoch) !== eraseEpoch) {
+        dls("locked")
+        dls("token")
+        notifyNewForm()
+      }
+    })
     socket.emit("requestIndents", "")
     socket.emit("requestNotifications", "")
+    socket.emit("requestEraseEpoch")
     return () => {
       socket.disconnect()
     }
@@ -218,6 +228,10 @@ const rls = (key) => {
 const wls = (key, item) => {
   window.localStorage.setItem(`ALFG:schema`, SCHEMA)
   window.localStorage.setItem(`ALFG:data:${key}`, item)
+}
+
+const dls = (key, item) => {
+  window.localStorage.removeItem(`ALFG:data:${key}`)
 }
 
 const TeamDisplay = ({blobs, data, setTd}) => {
@@ -409,7 +423,7 @@ const TeamView = ({id, cloneID}) => {
   React.useEffect(() => {
     const callbackID = registerForm(value => {
       setRl(value)
-      setTd(true)
+      setTd(value !== undefined ? true : false)
     })
     return () => deregisterForm(callbackID)
   }, [])
