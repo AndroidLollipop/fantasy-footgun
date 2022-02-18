@@ -93,7 +93,7 @@ const App = () => {
     socket.on("sendEraseEpoch", (eraseEpoch) => {
       const myEpoch = rls("eraseEpoch")
       wls("eraseEpoch", JSON.stringify(eraseEpoch))
-      if (myEpoch !== undefined && JSON.parse(myEpoch) !== eraseEpoch) {
+      if (myEpoch !== null && JSON.parse(myEpoch) !== eraseEpoch) {
         dls("locked")
         dls("token")
         notifyNewForm()
