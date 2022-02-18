@@ -428,14 +428,21 @@ const TeamView = ({id, cloneID}) => {
     return () => deregisterForm(callbackID)
   }, [])
   const form = readForm()
-  if (detailPersistentStore[id] === undefined) {
-    detailPersistentStore[id] = {}
-  }
   const [rl, setRl] = React.useState(readSubmitted())
   const prefill = React.useMemo(() => {
     return rl ? JSON.parse(rl) : undefined
   }, [rl])
-  const [td, setTd] = React.useState(!!rl)
+  if (detailPersistentStore[id] === undefined) {
+    detailPersistentStore[id] = {td: !!rl}
+  }
+  if (!rl) {
+    detailPersistentStore[id].td = false
+  }
+  const [td, rawSetTd] = React.useState(detailPersistentStore[id].td)
+  const setTd = val => {
+    detailPersistentStore[id].td = val
+    rawSetTd(val)
+  }
   return (<div style={TransportViewStyle}><div style={{height: "12px"}}/>{td ? <TeamDisplay blobs={form.blobs} data={prefill} setTd={setTd}/> : <FormFactory blobs={form.blobs} prefill={prefill} fields={form.fields} defaults={dataDefaults} formPersistentStore={detailPersistentStore[id]} validator={teamValidator}/>}</div>)
 }
 
