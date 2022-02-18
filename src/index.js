@@ -12,7 +12,7 @@ import sir5logo from "./resources/5sirlogo.jpg"
 import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
 
-const SCHEMA = "0.1.1b"
+const SCHEMA = "0.1.1c"
 const VERSION_NUMBER = "fantasy-footgun 0.1.2a"
 console.log(VERSION_NUMBER)
 
