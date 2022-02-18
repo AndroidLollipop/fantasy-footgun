@@ -18,7 +18,7 @@ console.log(VERSION_NUMBER)
 
 const ranker = require("./searchRanker.js")
 
-var serverURL = "localho.st:5000"
+var serverURL = "https://sheltered-atoll-88652.herokuapp.com/"
 
 var setTabs
 var additionalTabs = []
