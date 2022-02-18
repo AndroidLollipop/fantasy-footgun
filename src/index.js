@@ -313,7 +313,6 @@ const rls = (key) => {
 }
 
 const wls = (key, item) => {
-  console.log(item)
   window.localStorage.setItem(`ALFG:schema`, SCHEMA)
   window.localStorage.setItem(`ALFG:data:${key}`, item)
 }
