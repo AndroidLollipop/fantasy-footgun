@@ -1,18 +1,18 @@
 {
   "files": {
-    "main.js": "/fantasy-footgun-testing/static/js/main.280eed2d.chunk.js",
-    "main.js.map": "/fantasy-footgun-testing/static/js/main.280eed2d.chunk.js.map",
-    "runtime-main.js": "/fantasy-footgun-testing/static/js/runtime-main.9f029ef5.js",
-    "runtime-main.js.map": "/fantasy-footgun-testing/static/js/runtime-main.9f029ef5.js.map",
-    "static/js/2.d9cecdff.chunk.js": "/fantasy-footgun-testing/static/js/2.d9cecdff.chunk.js",
-    "static/js/2.d9cecdff.chunk.js.map": "/fantasy-footgun-testing/static/js/2.d9cecdff.chunk.js.map",
-    "index.html": "/fantasy-footgun-testing/index.html",
-    "static/js/2.d9cecdff.chunk.js.LICENSE.txt": "/fantasy-footgun-testing/static/js/2.d9cecdff.chunk.js.LICENSE.txt",
-    "static/media/5sirlogo.a6ac04db.jpg": "/fantasy-footgun-testing/static/media/5sirlogo.a6ac04db.jpg"
+    "main.js": "/fantasy-footgun/static/js/main.ca656e0f.chunk.js",
+    "main.js.map": "/fantasy-footgun/static/js/main.ca656e0f.chunk.js.map",
+    "runtime-main.js": "/fantasy-footgun/static/js/runtime-main.4aca56fe.js",
+    "runtime-main.js.map": "/fantasy-footgun/static/js/runtime-main.4aca56fe.js.map",
+    "static/js/2.a63cba2d.chunk.js": "/fantasy-footgun/static/js/2.a63cba2d.chunk.js",
+    "static/js/2.a63cba2d.chunk.js.map": "/fantasy-footgun/static/js/2.a63cba2d.chunk.js.map",
+    "index.html": "/fantasy-footgun/index.html",
+    "static/js/2.a63cba2d.chunk.js.LICENSE.txt": "/fantasy-footgun/static/js/2.a63cba2d.chunk.js.LICENSE.txt",
+    "static/media/5sirlogo.a6ac04db.jpg": "/fantasy-footgun/static/media/5sirlogo.a6ac04db.jpg"
   },
   "entrypoints": [
-    "static/js/runtime-main.9f029ef5.js",
-    "static/js/2.d9cecdff.chunk.js",
-    "static/js/main.280eed2d.chunk.js"
+    "static/js/runtime-main.4aca56fe.js",
+    "static/js/2.a63cba2d.chunk.js",
+    "static/js/main.ca656e0f.chunk.js"
   ]
 }
