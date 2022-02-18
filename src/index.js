@@ -13,7 +13,7 @@ import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
 
 const SCHEMA = "0.1.5a"
-const VERSION_NUMBER = "fantasy-footgun 0.1.5a"
+const VERSION_NUMBER = "fantasy-footgun 0.1.6a"
 console.log(VERSION_NUMBER)
 
 const ranker = require("./searchRanker.js")
@@ -423,7 +423,7 @@ const TeamView = ({id, cloneID}) => {
   React.useEffect(() => {
     const callbackID = registerForm(value => {
       setRl(value)
-      setTd(value !== undefined ? true : false)
+      setTd(value !== null ? true : false)
     })
     return () => deregisterForm(callbackID)
   }, [])
