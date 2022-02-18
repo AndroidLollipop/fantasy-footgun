@@ -9,18 +9,8 @@ import SearchBar from "material-ui-search-bar"
 
 import sir5logo from "./resources/5sirlogo.jpg"
 
-import {ViewState} from "@devexpress/dx-react-scheduler"
-import {
-  Scheduler,
-  MonthView,
-  Appointments,
-  Toolbar,
-  DateNavigator
-} from "@devexpress/dx-react-scheduler-material-ui"
-
 import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
-import AddIcon from "@material-ui/icons/Add"
 
 const SCHEMA = "0.1.1b"
 const VERSION_NUMBER = "fantasy-footgun 0.1.2a"
@@ -28,7 +18,7 @@ console.log(VERSION_NUMBER)
 
 const ranker = require("./searchRanker.js")
 
-var serverURL = "https://null.herokuapp.com/"
+var serverURL = "localho.st:5000"
 
 var setTabs
 var additionalTabs = []
@@ -69,22 +59,36 @@ const App = () => {
   setTabs = mySetTabs
   React.useEffect(() => {
     socket = socketIOClient(serverURL, {secure: true});
-    socket.on("sendIndents", (indents, writeToken) => {
+    socket.on("sendIndents", (indents) => {
+      dataStore = {...indents}
+      notifyNewData()
+    })
+    socket.on("sendNotifications", (notifications) => {
+      notificationsStore = [...notifications]
+      notifyNewN()
+    })
+    socket.on("commit", (writeToken, authToken) => {
       if (writeToken !== undefined) {
         if (writeToken < ackWriteToken) {
           return
         }
         ackWriteToken = writeToken
         if (pendingWrites[writeToken] !== undefined) {
-          pendingWrites[writeToken]()
+          pendingWrites[writeToken]([true, authToken])
         }
       }
-      dataStore = [...indents].reverse()
-      notifyNewData()
     })
-    socket.on("sendNotifications", (notifications) => {
-      notificationsStore = [...notifications].reverse()
-      notifyNewN()
+    socket.on("fail", (msg, writeToken) => {
+      alert(msg)
+      if (writeToken !== undefined) {
+        if (writeToken < ackWriteToken) {
+          return
+        }
+        ackWriteToken = writeToken
+        if (pendingWrites[writeToken] !== undefined) {
+          pendingWrites[writeToken]([false, null])
+        }
+      }
     })
     socket.emit("requestIndents", "")
     socket.emit("requestNotifications", "")
@@ -119,110 +123,37 @@ const App = () => {
           <Leaderboard setSelTab={setSelTab} heightProvider={[currentHeight, heightListeners]} transportPersistentStore={militaryPersistentStore.current} />
         </div>),
         (<div label="station winners" key="defaultTab2" myKey="defaultTab2">
-          <Results/>
-        </div>), ...tabs.map(({type, params: v}, i) => type === "detail" ? (<DetailGenerator setSelTab={setSelTab} mykey={v[0]} label={readDataStore(v[1]).name} removable="true" removeCallback={(index, length) => {
-          removeTab(v[0])
-          const currSelTab = Math.min(selTab, length-1)
-          if (currSelTab > index) {
-            setSelTab(currSelTab-1)
-          }
-        }} details={v} key={v[0]} heightProvider={[currentHeight, heightListeners]} />)
-        : (<div></div>))]}
+          <NotificationsPanel/>
+        </div>), ...tabs.map(({type, params: v}, i) => (<div></div>))]}
       </Tabs>
     </div>
   );
 }
 
-const NotificationsPanel = ({setSelTab}) => {
+const renderName = (blobs, name) => {
+  const blobName = blobs.find(x => x.name === name)?.fullName
+  return typeof blobName === "string" ? blobName : name
+}
+
+const NotificationsPanel = () => {
   var myData = readNotifications()
   const [data, setData] = React.useState(myData)
   React.useEffect(() => {
     const callbackID = registerNotify(setData)
     return () => deregisterNotify(callbackID)
   }, [])
-  var newData = []
-  const encountered = {}
-  for (var i = 0; i < myData.length; i++) {
-    if (encountered[myData[i].internalUID] === true) {
-      newData.push({...myData[i], latest: false})
-    }
-    else {
-      newData.push({...myData[i], latest: true})
-    }
-    encountered[myData[i].internalUID] = true
-  }
+  const form = readForm()
   return (
     <div>
       <div style={{height: "12px"}}/>
       <Material.Paper square>
-        <ListFactory data={newData} generator={(x, index) => notificationItemGenerator(x, x.internalUID, ""+x.internalUID+index, setSelTab)} style={TransportViewStyle}/>
+        <ListFactory data={data} generator={item => <Material.TableRow><Material.TableCell align="center">{item.category}</Material.TableCell><Material.TableCell align="center">{renderName(form.blobs["Soldiers"], item.winner)}</Material.TableCell></Material.TableRow>} style={TransportViewStyle}/>
       </Material.Paper>
     </div>
   )
 }
 
 const detailPersistentStore = {}
-
-const DetailGenerator = ({setSelTab, details, heightProvider}) => {
-  const [id, index] = details
-  if (detailPersistentStore[id] === undefined) {
-    detailPersistentStore[id] = readDataStore(index)
-  }
-  const [data, setData] = React.useState(detailPersistentStore[id])
-  const edit = async () => {
-    const result = await editData(index, detailPersistentStore[id])
-    if (result === true) {
-      alert("Indent saved successfully!")
-    }
-  }
-  return (
-  <div>
-    <div style={{height:"12px"}}/>
-    <Material.Paper square>
-      <ListFactory header={(<MyStickyHeader heightProvider={heightProvider}>{detailFields.map((x, index) => (<Material.TableCell key={index}>{x.friendlyName}</Material.TableCell>))}</MyStickyHeader>)} data={[data]} generator={x => detailItemGenerator(x, x.internalUID)} style={TransportViewStyle}/>
-    </Material.Paper>
-    <div style={{height:"12px"}}/>
-    <Material.Button variant="outlined" onClick={() => {
-      addNewTab(data.internalUID)
-      setSelTab(Infinity)
-    }}>Copy</Material.Button>
-    <div style={{height:"12px"}}/>
-    <div>
-      <div style={{display:"inline", verticalAlign:"middle"}}>
-        <div style={formItemStyle}>
-          <Material.TextField fullWidth={true} multiline label={"Additional Info"} variant="outlined" value={data.addInfo} onChange={(event) => {
-            detailPersistentStore[id] = {...detailPersistentStore[id], addInfo: event.target.value}
-            setData(detailPersistentStore[id])
-          }} InputLabelProps={{shrink: true,}} style={{maxWidth: "1000px"}}/>
-        </div>
-      </div>
-    </div>
-    <div style={{height:"12px"}}/>
-    <div>
-      <div style={{display:"inline", verticalAlign:"middle"}}>
-        <Material.Select variant="outlined" native value={data.status} onChange={(event) => {
-          detailPersistentStore[id] = {...detailPersistentStore[id], status: event.target.value}
-          setData(detailPersistentStore[id])
-        }}>
-        {statuses.map((val, index) => (<option key={index} value={val}>{val}</option>))}
-        </Material.Select>
-      </div>
-      <div style={{display:"inline-block", width:"1px"}}/>
-      <div style={{display:"inline", verticalAlign:"middle"}}>
-        <Material.Button variant="outlined" onClick={edit}>Save</Material.Button>
-      </div>
-    </div>
-  </div>
-  )
-}
-
-const editData = async (index, newData) => {
-  const refresh = await writeDataStore(index, newData)
-  if (refresh) {
-    notifyNewData()
-  }
-  return refresh
-}
 
 const readDataStore = (internalUID) => {
   const result = dataStore.filter(x => x.internalUID === internalUID)
@@ -238,34 +169,21 @@ var ackWriteToken = 0
 var currWriteToken = 0
 var pendingWrites = []
 
-const writeDataStore = async (internalUID, write) => {
-  currWriteToken++
-  var resolve
-  const myPromise = new Promise(v => resolve=v)
-  pendingWrites[currWriteToken] = resolve
-  socket.emit("writeDataStore", [internalUID, write, currWriteToken])
-  await myPromise
-  if (currWriteToken === ackWriteToken) {
-    return true
-  }
-  else {
-    return false
-  }
-}
+var reqInProgress = false
 
-const appendDataStore = async (write) => {
+const appendSubmission = async (write, authToken) => {
+  if (reqInProgress) {
+    return [false, null]
+  }
+  reqInProgress = true
   currWriteToken++
   var resolve
   const myPromise = new Promise(v => resolve=v)
   pendingWrites[currWriteToken] = resolve
-  socket.emit("appendDataStore", [write, currWriteToken])
-  await myPromise
-  if (currWriteToken === ackWriteToken) {
-    return true
-  }
-  else {
-    return false
-  }
+  socket.emit("appendSubmission", write, currWriteToken, authToken)
+  const ret = await myPromise
+  reqInProgress = false
+  return ret
 }
 
 const readRange = () => {
@@ -288,21 +206,6 @@ const teamValidator = data => {
     }
   }
   return ["SUCCESS"]
-}
-
-const submitForm = async (data, validator, authenticated) => {
-  if (typeof validator === "function") {
-    const validated = validator(data, authenticated)
-    if (validated[0] !== "SUCCESS") {
-      return validated
-    }
-  }
-  const refresh = await appendDataStore(data)
-  if (refresh) {
-    notifyNewData()
-    return ["SUCCESS"]
-  }
-  return ["UNKNOWN"]
 }
 
 const rls = (key) => {
@@ -386,9 +289,14 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
       alert(res[1])
       return
     }
-    const str = JSON.stringify(constitutedObject)
-    wls("locked", str)
-    notifyNewForm(str)
+    const [success, authToken] = await appendSubmission(constitutedObject, JSON.parse(rls("token")))
+    if (success) {
+      const fStr = JSON.stringify(constitutedObject)
+      const aStr = JSON.stringify(authToken)
+      wls("locked", fStr)
+      wls("token", aStr)
+      notifyNewForm(fStr)
+    }
   }
   return (
   <div>
@@ -635,21 +543,6 @@ const Leaderboard = ({setSelTab, heightProvider, transportPersistentStore}) => {
   )
 }
 
-const Results = () => {
-  return <div>
-    <div style={{height: "12px"}}/>
-    <Material.Paper square>
-      <Material.TableContainer>
-        <Material.Table>
-          <Material.TableRow><Material.TableCell align="center">{"Best SAR21"}</Material.TableCell><Material.TableCell align="center">{"TBD"}</Material.TableCell></Material.TableRow>
-          <Material.TableRow><Material.TableCell align="center">{"Best SAW"}</Material.TableCell><Material.TableCell align="center">{"TBD"}</Material.TableCell></Material.TableRow>
-          <Material.TableRow><Material.TableCell align="center">{"Best GPMG"}</Material.TableCell><Material.TableCell align="center">{"TBD"}</Material.TableCell></Material.TableRow>
-        </Material.Table>
-      </Material.TableContainer>
-    </Material.Paper>
-  </div>
-}
-
 const ANIMATION_TIME = 0.075
 const TRANSITION_STRING = `all ${ANIMATION_TIME}s linear`
 
@@ -835,14 +728,14 @@ const getCallbackSystem = (dataSource) => {
   return [registerCallback, deregisterCallback, notifyNewData]
 }
 
-var dataStore = {columns: ["Name", "Total Score", "SAR21", "SAW", "GPMG"], rows: [["PTE A", 3, 1, 1, 1], ["PTE B", 2, 0, 1, 1], ["PTE C", 1, 0, 1, 0]]}
+var dataStore = {columns: [], rows: []}
 
 var formStore = {fields: [{name: "nickname", initialData: "", friendlyName: "Name", fieldType: "single"}, {name: "sar21", initialData: null, friendlyName: "Best SAR21" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "saw", initialData: null, friendlyName: "Best SAW" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "gpmg", initialData: null, friendlyName: "Best GPMG" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}], data: {}, blobs: {"Soldiers": [
-  {name: "Alpha", friendlyName: "Alpha - PTE 1", photo: "https://i.pinimg.com/originals/3e/37/24/3e3724692c15d28f12a4c7bc6fe0b945.jpg"},
-  {name: "Bravo", friendlyName: "Bravo - PTE 2", photo: "https://scontent.fsin13-1.fna.fbcdn.net/v/t1.6435-9/64861023_2345584528868126_2696896092137586688_n.jpg?_nc_cat=107&ccb=1-5&_nc_sid=174925&_nc_ohc=kUjXJTOpnBwAX-aymIb&_nc_ht=scontent.fsin13-1.fna&oh=00_AT80RHyc6Z9aJrAh8nXipP93by8NOtWDXFiVM6iktKjBfg&oe=62306048"},
-  {name: "Charlie", friendlyName: "Charlie - PTE 3", photo: "https://i.pinimg.com/280x280_RS/d2/ab/39/d2ab39788ec4254ab7761317448f5da3.jpg"},
-  {name: "Support", friendlyName: "Support - PTE 4", photo: "https://c8.alamy.com/comp/D198EY/a-balinese-man-in-a-singapore-army-camo-shirt-D198EY.jpg"},
-  {name: "MSC", friendlyName: "MSC - PTE 5", photo: "https://www.janes.com/images/default-source/news-images/fg_3808936-idr-9354.jpg?sfvrsn=b60dfede_2"}
+  {name: "Alpha", fullName: "PTE 1", friendlyName: "Alpha - PTE 1", photo: "https://i.pinimg.com/originals/3e/37/24/3e3724692c15d28f12a4c7bc6fe0b945.jpg"},
+  {name: "Bravo", fullName: "PTE 2", friendlyName: "Bravo - PTE 2", photo: "https://scontent.fsin13-1.fna.fbcdn.net/v/t1.6435-9/64861023_2345584528868126_2696896092137586688_n.jpg?_nc_cat=107&ccb=1-5&_nc_sid=174925&_nc_ohc=kUjXJTOpnBwAX-aymIb&_nc_ht=scontent.fsin13-1.fna&oh=00_AT80RHyc6Z9aJrAh8nXipP93by8NOtWDXFiVM6iktKjBfg&oe=62306048"},
+  {name: "Charlie", fullName: "PTE 3", friendlyName: "Charlie - PTE 3", photo: "https://i.pinimg.com/280x280_RS/d2/ab/39/d2ab39788ec4254ab7761317448f5da3.jpg"},
+  {name: "Support", fullName: "PTE 4", friendlyName: "Support - PTE 4", photo: "https://c8.alamy.com/comp/D198EY/a-balinese-man-in-a-singapore-army-camo-shirt-D198EY.jpg"},
+  {name: "MSC", fullName: "PTE 5", friendlyName: "MSC - PTE 5", photo: "https://www.janes.com/images/default-source/news-images/fg_3808936-idr-9354.jpg?sfvrsn=b60dfede_2"}
 ]}}
 
 const readNotifications = () => {
