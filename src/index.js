@@ -28,7 +28,7 @@ console.log(VERSION_NUMBER)
 
 const ranker = require("./searchRanker.js")
 
-var serverURL = "https://null.herokuapp.com/"
+var serverURL = "localho.st:5000"
 
 var setTabs
 var additionalTabs = []
@@ -79,7 +79,7 @@ const App = () => {
           pendingWrites[writeToken]()
         }
       }
-      dataStore = [...indents].reverse()
+      dataStore = {...indents}
       notifyNewData()
     })
     socket.on("sendNotifications", (notifications) => {
@@ -119,7 +119,7 @@ const App = () => {
           <Leaderboard setSelTab={setSelTab} heightProvider={[currentHeight, heightListeners]} transportPersistentStore={militaryPersistentStore.current} />
         </div>),
         (<div label="station winners" key="defaultTab2" myKey="defaultTab2">
-          <Results/>
+          <NotificationsPanel/>
         </div>), ...tabs.map(({type, params: v}, i) => type === "detail" ? (<DetailGenerator setSelTab={setSelTab} mykey={v[0]} label={readDataStore(v[1]).name} removable="true" removeCallback={(index, length) => {
           removeTab(v[0])
           const currSelTab = Math.min(selTab, length-1)
@@ -133,29 +133,18 @@ const App = () => {
   );
 }
 
-const NotificationsPanel = ({setSelTab}) => {
+const NotificationsPanel = () => {
   var myData = readNotifications()
   const [data, setData] = React.useState(myData)
   React.useEffect(() => {
     const callbackID = registerNotify(setData)
     return () => deregisterNotify(callbackID)
   }, [])
-  var newData = []
-  const encountered = {}
-  for (var i = 0; i < myData.length; i++) {
-    if (encountered[myData[i].internalUID] === true) {
-      newData.push({...myData[i], latest: false})
-    }
-    else {
-      newData.push({...myData[i], latest: true})
-    }
-    encountered[myData[i].internalUID] = true
-  }
   return (
     <div>
       <div style={{height: "12px"}}/>
       <Material.Paper square>
-        <ListFactory data={newData} generator={(x, index) => notificationItemGenerator(x, x.internalUID, ""+x.internalUID+index, setSelTab)} style={TransportViewStyle}/>
+        <ListFactory data={data} generator={item => <Material.TableRow><Material.TableCell align="center">{item.category}</Material.TableCell><Material.TableCell align="center">{item.winner}</Material.TableCell></Material.TableRow>} style={TransportViewStyle}/>
       </Material.Paper>
     </div>
   )
@@ -635,21 +624,6 @@ const Leaderboard = ({setSelTab, heightProvider, transportPersistentStore}) => {
   )
 }
 
-const Results = () => {
-  return <div>
-    <div style={{height: "12px"}}/>
-    <Material.Paper square>
-      <Material.TableContainer>
-        <Material.Table>
-          <Material.TableRow><Material.TableCell align="center">{"Best SAR21"}</Material.TableCell><Material.TableCell align="center">{"TBD"}</Material.TableCell></Material.TableRow>
-          <Material.TableRow><Material.TableCell align="center">{"Best SAW"}</Material.TableCell><Material.TableCell align="center">{"TBD"}</Material.TableCell></Material.TableRow>
-          <Material.TableRow><Material.TableCell align="center">{"Best GPMG"}</Material.TableCell><Material.TableCell align="center">{"TBD"}</Material.TableCell></Material.TableRow>
-        </Material.Table>
-      </Material.TableContainer>
-    </Material.Paper>
-  </div>
-}
-
 const ANIMATION_TIME = 0.075
 const TRANSITION_STRING = `all ${ANIMATION_TIME}s linear`
 
@@ -835,7 +809,7 @@ const getCallbackSystem = (dataSource) => {
   return [registerCallback, deregisterCallback, notifyNewData]
 }
 
-var dataStore = {columns: ["Name", "Total Score", "SAR21", "SAW", "GPMG"], rows: [["PTE A", 3, 1, 1, 1], ["PTE B", 2, 0, 1, 1], ["PTE C", 1, 0, 1, 0]]}
+var dataStore = {columns: [], rows: []}
 
 var formStore = {fields: [{name: "nickname", initialData: "", friendlyName: "Name", fieldType: "single"}, {name: "sar21", initialData: null, friendlyName: "Best SAR21" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "saw", initialData: null, friendlyName: "Best SAW" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "gpmg", initialData: null, friendlyName: "Best GPMG" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}], data: {}, blobs: {"Soldiers": [
   {name: "Alpha", friendlyName: "Alpha - PTE 1", photo: "https://i.pinimg.com/originals/3e/37/24/3e3724692c15d28f12a4c7bc6fe0b945.jpg"},
