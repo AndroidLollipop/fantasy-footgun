@@ -814,7 +814,7 @@ const Tabs = ({childWrapper, childContext, children, selTab, setSelTab, appbarRe
   const ChildWrapper = childWrapper
   return (
     <div>
-      <Material.AppBar title={<Material.Typography>Fantasy Skill at Arms</Material.Typography>} position="sticky" style={{top: "env(safe-area-inset-top)"}} ref={appbarRef}>
+      <Material.AppBar position="sticky" style={{top: "env(safe-area-inset-top)"}} ref={appbarRef}>
         <Material.Tabs variant="scrollable" value={Math.min(selTab, children.length-1)+pre.length}>
           {[...pre , ...children.map((child, index) => {
             const obj = {...child.props, removeCallback: () => child.props.removeCallback(index, children.length), onClick: () => {setSelTab(index)}, active: index === Math.min(selTab, children.length-1), key: child.props.mykey}
