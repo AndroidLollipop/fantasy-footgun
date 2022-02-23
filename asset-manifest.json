@@ -1,18 +1,18 @@
 {
   "files": {
-    "main.js": "/fantasy-footgun/static/js/main.3ec2dd65.chunk.js",
-    "main.js.map": "/fantasy-footgun/static/js/main.3ec2dd65.chunk.js.map",
+    "main.js": "/fantasy-footgun/static/js/main.682cbdee.chunk.js",
+    "main.js.map": "/fantasy-footgun/static/js/main.682cbdee.chunk.js.map",
     "runtime-main.js": "/fantasy-footgun/static/js/runtime-main.4aca56fe.js",
     "runtime-main.js.map": "/fantasy-footgun/static/js/runtime-main.4aca56fe.js.map",
-    "static/js/2.e9cb2cae.chunk.js": "/fantasy-footgun/static/js/2.e9cb2cae.chunk.js",
-    "static/js/2.e9cb2cae.chunk.js.map": "/fantasy-footgun/static/js/2.e9cb2cae.chunk.js.map",
+    "static/js/2.e8a6c858.chunk.js": "/fantasy-footgun/static/js/2.e8a6c858.chunk.js",
+    "static/js/2.e8a6c858.chunk.js.map": "/fantasy-footgun/static/js/2.e8a6c858.chunk.js.map",
     "index.html": "/fantasy-footgun/index.html",
-    "static/js/2.e9cb2cae.chunk.js.LICENSE.txt": "/fantasy-footgun/static/js/2.e9cb2cae.chunk.js.LICENSE.txt",
+    "static/js/2.e8a6c858.chunk.js.LICENSE.txt": "/fantasy-footgun/static/js/2.e8a6c858.chunk.js.LICENSE.txt",
     "static/media/5sirlogo.a6ac04db.jpg": "/fantasy-footgun/static/media/5sirlogo.a6ac04db.jpg"
   },
   "entrypoints": [
     "static/js/runtime-main.4aca56fe.js",
-    "static/js/2.e9cb2cae.chunk.js",
-    "static/js/main.3ec2dd65.chunk.js"
+    "static/js/2.e8a6c858.chunk.js",
+    "static/js/main.682cbdee.chunk.js"
   ]
 }
