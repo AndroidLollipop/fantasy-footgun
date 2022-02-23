@@ -13,7 +13,7 @@ import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
 
 const SCHEMA = "0.1.5a"
-const VERSION_NUMBER = "fantasy-footgun 0.1.8a"
+const VERSION_NUMBER = "fantasy-footgun 0.1.9a"
 console.log(VERSION_NUMBER)
 
 const ranker = require("./searchRanker.js")
@@ -140,9 +140,10 @@ const App = () => {
   );
 }
 
-const renderName = (blobs, name) => {
-  const blobName = blobs.find(x => x.name === name)?.fullName
-  return typeof blobName === "string" ? blobName : name
+const renderName = (form, item) => {
+  const field = form.fields.find(x => x.name === item.name)
+  const blobName = form.blobs[field?.blobName].find(x => x.name === field?.blobName)?.fullName
+  return typeof blobName === "string" ? blobName : item.name
 }
 
 const NotificationsPanel = () => {
@@ -157,7 +158,7 @@ const NotificationsPanel = () => {
     <div>
       <div style={{height: "12px"}}/>
       <Material.Paper square>
-        <ListFactory data={data} generator={item => <Material.TableRow><Material.TableCell align="center">{item.category}</Material.TableCell><Material.TableCell align="center">{renderName(form.blobs["Soldiers"], item.winner)}</Material.TableCell></Material.TableRow>} style={TransportViewStyle}/>
+        <ListFactory data={data} generator={item => <Material.TableRow><Material.TableCell align="center">{item.category}</Material.TableCell><Material.TableCell align="center">{renderName(form, item)}</Material.TableCell></Material.TableRow>} style={TransportViewStyle}/>
       </Material.Paper>
     </div>
   )
@@ -242,7 +243,7 @@ const TeamDisplay = ({blobs, data, fields, setTd}) => {
           <div style={formItemStyle} key={index}>
             <Material.Typography>{`${field.columnName}: ${blobs[field.blobName].find(x => x.name === data?.[field.name])?.friendlyName}`}</Material.Typography>
             <div style={{flexBasis: "100%", height: "12px"}}/>
-            <img src={blobs["Soldiers"].find(x => x.name === data?.[field.name])?.photo} height={125}/>
+            <img src={blobs[field.blobName].find(x => x.name === data?.[field.name])?.photo} height={125}/>
           </div>
         ) : (
           <div style={formItemStyle} key={index}>
