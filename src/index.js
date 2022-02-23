@@ -13,7 +13,7 @@ import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
 
 const SCHEMA = "0.1.5a"
-const VERSION_NUMBER = "fantasy-footgun 0.1.9a"
+const VERSION_NUMBER = "fantasy-footgun 0.2.0a"
 console.log(VERSION_NUMBER)
 
 const ranker = require("./searchRanker.js")
@@ -142,7 +142,7 @@ const App = () => {
 
 const renderName = (form, item) => {
   const field = form.fields.find(x => x.name === item.name)
-  const blobName = form.blobs[field?.blobName].find(x => x.name === field?.blobName)?.fullName
+  const blobName = form.blobs[field?.blobName]?.find?.(x => x.name === field?.blobName)?.fullName
   return typeof blobName === "string" ? blobName : item.name
 }
 
