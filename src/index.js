@@ -234,27 +234,22 @@ const dls = (key, item) => {
   window.localStorage.removeItem(`ALFG:data:${key}`)
 }
 
-const TeamDisplay = ({blobs, data, setTd}) => {
+const TeamDisplay = ({blobs, data, fields, setTd}) => {
   return data === undefined ? <div/> : <div>
     <div>
-      <div style={formItemStyle}>
-        <Material.Typography>{`Name: ${data.nickname}`}</Material.Typography>
-      </div>
-      <div style={formItemStyle}>
-        <Material.Typography>{`SAR21: ${blobs["Soldiers"].find(x => x.name === data.sar21)?.friendlyName}`}</Material.Typography>
-        <div style={{flexBasis: "100%", height: "12px"}}/>
-        <img src={blobs["Soldiers"].find(x => x.name === data.sar21)?.photo} height={125}/>
-      </div>
-      <div style={formItemStyle}>
-        <Material.Typography>{`SAW: ${blobs["Soldiers"].find(x => x.name === data.saw)?.friendlyName}`}</Material.Typography>
-        <div style={{flexBasis: "100%", height: "12px"}}/>
-        <img src={blobs["Soldiers"].find(x => x.name === data.saw)?.photo} height={125}/>
-      </div>
-      <div style={formItemStyle}>
-        <Material.Typography>{`GPMG: ${blobs["Soldiers"].find(x => x.name === data.gpmg)?.friendlyName}`}</Material.Typography>
-        <div style={{flexBasis: "100%", height: "12px"}}/>
-        <img src={blobs["Soldiers"].find(x => x.name === data.gpmg)?.photo} height={125}/>
-      </div>
+      {fields.map((field, index) => {
+        return field.fieldType === "selectBlob" ? (
+          <div style={formItemStyle} key={index}>
+            <Material.Typography>{`${field.columnName}: ${blobs[field.blobName].find(x => x.name === data?.[field.name])?.friendlyName}`}</Material.Typography>
+            <div style={{flexBasis: "100%", height: "12px"}}/>
+            <img src={blobs["Soldiers"].find(x => x.name === data?.[field.name])?.photo} height={125}/>
+          </div>
+        ) : (
+          <div style={formItemStyle} key={index}>
+            <Material.Typography>{`Name: ${data?.[field.name]}`}</Material.Typography>
+          </div>
+        )
+      })}
       <div style={{height: "12px"}}/>  
       <Material.Button variant="outlined" onClick={() => setTd(false)}>edit team</Material.Button>
       <div style={{height:"48px"}}/>
@@ -443,7 +438,7 @@ const TeamView = ({id, cloneID}) => {
     detailPersistentStore[id].td = val
     rawSetTd(val)
   }
-  return (<div style={TransportViewStyle}><div style={{height: "12px"}}/>{td ? <TeamDisplay blobs={form.blobs} data={prefill} setTd={setTd}/> : <FormFactory blobs={form.blobs} prefill={prefill} fields={form.fields} defaults={dataDefaults} formPersistentStore={detailPersistentStore[id]} validator={teamValidator}/>}</div>)
+  return (<div style={TransportViewStyle}><div style={{height: "12px"}}/>{td ? <TeamDisplay blobs={form.blobs} data={prefill} fields={form.fields} setTd={setTd}/> : <FormFactory blobs={form.blobs} prefill={prefill} fields={form.fields} defaults={dataDefaults} formPersistentStore={detailPersistentStore[id]} validator={teamValidator}/>}</div>)
 }
 
 const DEBOUNCE_PERIOD = 100
@@ -751,7 +746,6 @@ const getCallbackSystem = (dataSource) => {
 
 var dataStore = {columns: [], rows: []}
 
-var formStore = {fields: [{name: "nickname", initialData: "", friendlyName: "Name", fieldType: "single"}, {name: "sar21", initialData: null, friendlyName: "Best SAR21" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "saw", initialData: null, friendlyName: "Best SAW" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}, {name: "gpmg", initialData: null, friendlyName: "Best GPMG" ,fieldType: "selectBlob", blobName: "Soldiers", display: "textPhoto"}], data: {}, blobs: {"Soldiers": [
   {name: "Alpha", fullName: "PTE 1", friendlyName: "Alpha - PTE 1", photo: "https://i.pinimg.com/originals/3e/37/24/3e3724692c15d28f12a4c7bc6fe0b945.jpg"},
   {name: "Bravo", fullName: "PTE 2", friendlyName: "Bravo - PTE 2", photo: "https://scontent.fsin13-1.fna.fbcdn.net/v/t1.6435-9/64861023_2345584528868126_2696896092137586688_n.jpg?_nc_cat=107&ccb=1-5&_nc_sid=174925&_nc_ohc=kUjXJTOpnBwAX-aymIb&_nc_ht=scontent.fsin13-1.fna&oh=00_AT80RHyc6Z9aJrAh8nXipP93by8NOtWDXFiVM6iktKjBfg&oe=62306048"},
   {name: "Charlie", fullName: "PTE 3", friendlyName: "Charlie - PTE 3", photo: "https://i.pinimg.com/280x280_RS/d2/ab/39/d2ab39788ec4254ab7761317448f5da3.jpg"},
