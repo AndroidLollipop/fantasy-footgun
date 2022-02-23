@@ -13,7 +13,7 @@ import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
 
 const SCHEMA = "0.1.5a"
-const VERSION_NUMBER = "fantasy-footgun 0.2.1"
+const VERSION_NUMBER = "fantasy-footgun 0.2.1a"
 console.log(VERSION_NUMBER)
 
 const ranker = require("./searchRanker.js")
