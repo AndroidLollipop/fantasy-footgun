@@ -37,6 +37,7 @@ const removeTab = (id) => {
 }
 
 var socket
+var imageCache = {}
 
 const ScrollWrapper = ({childContext, mykey, children}) => {
   const currKey = React.useRef(mykey)
@@ -103,6 +104,15 @@ const App = () => {
     socket.emit("requestIndents", "")
     socket.emit("requestNotifications", "")
     socket.emit("requestEraseEpoch")
+    const form = readForm()
+    form.fields.forEach(x => x.blobName ? form.blobs[x.blobName].forEach(
+      x => {
+        const photo = x.photo
+        if (imageCache[photo] === undefined) {
+          imageCache[photo] = <img src={photo} alt="cache"/>
+        }
+      }
+    ) : undefined)
     return () => {
       socket.disconnect()
     }
