@@ -12,8 +12,8 @@ import sir5logo from "./resources/5sirlogo.jpg"
 import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
 
-const SCHEMA = "0.1.5a"
-const VERSION_NUMBER = "fantasy-footgun 0.2.1a"
+const SCHEMA = "0.1.7a"
+const VERSION_NUMBER = "fantasy-footgun 0.2.2a"
 console.log(VERSION_NUMBER)
 
 const ranker = require("./searchRanker.js")
@@ -220,14 +220,14 @@ const teamValidator = data => {
 }
 
 const rls = (key) => {
-  if (window.localStorage.getItem(`ALFG:schema`) !== SCHEMA) {
+  if (window.localStorage.getItem(`ALFG:schema:${key}`) !== SCHEMA) {
     window.localStorage.removeItem(`ALFG:data:${key}`)
   }
   return window.localStorage.getItem(`ALFG:data:${key}`)
 }
 
 const wls = (key, item) => {
-  window.localStorage.setItem(`ALFG:schema`, SCHEMA)
+  window.localStorage.setItem(`ALFG:schema:${key}`, SCHEMA)
   window.localStorage.setItem(`ALFG:data:${key}`, item)
 }
 
