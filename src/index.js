@@ -12,8 +12,8 @@ import sir5logo from "./resources/5sirlogo.jpg"
 import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
 
-const SCHEMA = "0.2.3a"
-const VERSION_NUMBER = "fantasy-footgun 0.2.3a"
+const SCHEMA = "0.2.6a"
+const VERSION_NUMBER = "fantasy-footgun 0.2.6a"
 console.log(VERSION_NUMBER)
 
 const ranker = require("./searchRanker.js")
@@ -155,11 +155,28 @@ const NotificationsPanel = () => {
     return () => deregisterNotify(callbackID)
   }, [])
   const form = readForm()
+  const tdData = React.useMemo(() => {
+    const tdData = {}
+    for (const row of data) {
+      tdData[row.name] = row.winner
+    }
+    return tdData
+  }, [data])
+  const myFields = React.useMemo(() => {
+    const myFields = []
+    for (const row of data) {
+      const foundField = form.fields.find(x => x.name === row.name)
+      if (foundField !== undefined) {
+        myFields.push(foundField)
+      }
+    }
+    return myFields
+  }, [data])
   return (
     <div>
       <div style={{height: "12px"}}/>
       <Material.Paper square>
-        <ListFactory data={data} generator={item => <Material.TableRow><Material.TableCell align="center">{item.category}</Material.TableCell><Material.TableCell align="center">{renderName(form, item)}</Material.TableCell></Material.TableRow>} style={TransportViewStyle}/>
+        <TeamDisplay blobs={form.blobs} data={tdData} fields={myFields}/>
       </Material.Paper>
     </div>
   )
@@ -240,11 +257,12 @@ const TeamDisplay = ({blobs, data, fields, setTd}) => {
   return data === undefined ? <div/> : <div>
     <div>
       {fields.map((field, index) => {
+        const imgUrl = blobs[field.blobName].find(x => x.name === data?.[field.name])?.photo
         return field.fieldType === "selectBlob" ? (
           <div style={formItemStyle} key={index}>
-            <Material.Typography>{`${field.columnName}: ${blobs[field.blobName].find(x => x.name === data?.[field.name])?.friendlyName}`}</Material.Typography>
+            <Material.Typography>{`${field.columnName}: ${blobs[field.blobName].find(x => x.name === data?.[field.name])?.friendlyName ?? data?.[field.name]}`}</Material.Typography>
             <div style={{flexBasis: "100%", height: "12px"}}/>
-            <img src={blobs[field.blobName].find(x => x.name === data?.[field.name])?.photo} height={125}/>
+            {imgUrl !== undefined ? <img src={imgUrl} height={125}/> : undefined}
           </div>
         ) : (
           <div style={formItemStyle} key={index}>
@@ -253,7 +271,7 @@ const TeamDisplay = ({blobs, data, fields, setTd}) => {
         )
       })}
       <div style={{height: "12px"}}/>  
-      <Material.Button variant="outlined" onClick={() => setTd(false)}>edit team</Material.Button>
+      {typeof setTd === "function" ? <Material.Button variant="outlined" onClick={() => setTd(false)}>edit team</Material.Button> : undefined}
       <div style={{height:"48px"}}/>
     </div>
   </div>
