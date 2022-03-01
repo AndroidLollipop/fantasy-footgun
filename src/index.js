@@ -416,34 +416,38 @@ const formItemStyle = {
 }
 
 const TeamView = ({id, cloneID}) => {
-  const firstRender = React.useRef(true)
   React.useEffect(() => {
     const callbackID = registerForm(value => {
-      const rlValid = value !== null ? true : false
-      detailPersistentStore[id].lRlValid = rlValid
       setRl(value)
-      setTd(value !== null ? true : false)
+      setTd(value !== null)
     })
     return () => deregisterForm(callbackID)
+  }, [])
+  const idRef = React.useRef(id)
+  idRef.current = id
+  React.useEffect(() => {
+    if (detailPersistentStore[id].prevCallbackId !== null) {
+      deregisterForm(detailPersistentStore[id].prevCallbackId)
+    }
+    return () => {}
+  }, [id])
+  React.useEffect(() => {
+    return () => {
+      detailPersistentStore[idRef.current] = registerForm(value => {
+        detailPersistentStore[id].td = value !== null
+      })
+    }
   }, [])
   const form = readForm()
   const [rl, setRl] = React.useState(readSubmitted())
   const prefill = React.useMemo(() => {
     return rl ? JSON.parse(rl) : undefined
   }, [rl])
-  const rlValid = !!rl
   if (detailPersistentStore[id] === undefined) {
-    detailPersistentStore[id] = {td: !!rl, lRlValid: null}
+    detailPersistentStore[id] = {td: !!rl, prevCallbackId: null}
   }
   if (!rl) {
     detailPersistentStore[id].td = false
-  }
-  if (firstRender.current) {
-    firstRender.current = false
-    if (rlValid && detailPersistentStore[id].lRlValid === false) {
-      detailPersistentStore[id].td = true
-    }
-    detailPersistentStore[id].lRlValid = rlValid
   }
   const [td, rawSetTd] = React.useState(detailPersistentStore[id].td)
   const setTd = val => {
