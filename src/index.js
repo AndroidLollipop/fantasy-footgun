@@ -429,7 +429,8 @@ const formItemStyle = {
 const radioItemStyle = {
   width: "100%",
   maxWidth: "1000px",
-  display: "flex"
+  display: "flex",
+  textAlign: "left"
 }
 
 const TeamView = ({id, cloneID}) => {
