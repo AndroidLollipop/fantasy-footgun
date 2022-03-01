@@ -12,8 +12,8 @@ import sir5logo from "./resources/5sirlogo.jpg"
 import CalendarTodayIcon from "@material-ui/icons/CalendarToday"
 import ListIcon from "@material-ui/icons/List"
 
-const SCHEMA = "0.1.7a"
-const VERSION_NUMBER = "fantasy-footgun 0.2.2a"
+const SCHEMA = "0.2.3a"
+const VERSION_NUMBER = "fantasy-footgun 0.2.3a"
 console.log(VERSION_NUMBER)
 
 const ranker = require("./searchRanker.js")
