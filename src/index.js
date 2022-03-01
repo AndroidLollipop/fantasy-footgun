@@ -264,7 +264,7 @@ const TeamDisplay = ({blobs, data, fields, setTd}) => {
           <div style={formItemStyle} key={index}>
             <Material.Typography>{`${field.columnName}: ${blobs[field.blobName].find(x => x.name === data?.[field.name])?.friendlyName ?? data?.[field.name]}`}</Material.Typography>
             <div style={{flexBasis: "100%", height: "12px"}}/>
-            {imgUrl !== undefined ? <img src={imgUrl} height={125}/> : undefined}
+            {imgUrl !== undefined ? <img src={imgUrl} height={125} style={{minWidth: "1px"}}/> : undefined}
           </div>
         ) : (
           <div style={formItemStyle} key={index}>
@@ -389,7 +389,7 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
         >
         {(options => text === null ? [<option key={-1} value={null}></option>, ...options] : options)(blobs[blobName].map((val, index) => (<option key={index} value={val.name}>{val.friendlyName}</option>)))}
         </Material.TextField>
-        <div style={{flexBasis: "100%", height: "12px"}}/>{text === null ? <div style={{height: 125, width: 1}}/> : <img src={blobs[blobName].find(x => x.name === text)?.photo} height={125}/>}
+        <div style={{flexBasis: "100%", height: "12px"}}/>{text === null ? <div style={{height: 125, width: 1}}/> : <img src={blobs[blobName].find(x => x.name === text)?.photo} height={125} style={{minWidth: "1px"}}/>}
       </React.Fragment>)
       :fieldType === "multi" ?
       (<Material.TextField
