@@ -231,6 +231,8 @@ const teamValidator = data => {
   for (const field in data) {
     const val = data[field]
     if (!val || typeof val === "string" && val.length === 0) {
+      const element = document.getElementById(fieldNameToId(field))
+      element?.scrollIntoView({behavior: "smooth", block: "center"})
       return ["FAILED", "Please fill in all fields"]
     }
   }
@@ -277,6 +279,8 @@ const TeamDisplay = ({blobs, data, fields, setTd}) => {
   </div>
 }
 
+const fieldNameToId = name => `fnid::${name}`
+
 const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) => {
   var fieldStates = []
   var myPersistentStore = formPersistentStore === undefined ? {} : formPersistentStore
@@ -315,7 +319,7 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
     }
     const res = validator(constitutedObject)
     if (res[0] !== "SUCCESS") {
-      alert(res[1])
+      //alert(res[1])
       return
     }
     const [success, authToken] = await appendSubmission(constitutedObject, JSON.parse(rls("token")))
@@ -368,6 +372,7 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
       :fieldType === "selectBlob" ? 
       (<React.Fragment>
         <Material.TextField 
+        id={fieldNameToId(fieldName)}
         fullWidth={true}
         select
         label={friendlyName}
@@ -398,7 +403,7 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
         shrink: true
       }}
       style={{maxWidth: "1000px"}}/>)
-      :(<Material.TextField fullWidth={true} multiline label={friendlyName} variant="outlined" value={text} onChange={(event) => setText(event.target.value)} InputLabelProps={{shrink: true,}} style={{maxWidth: "1000px"}}/>)
+      :(<Material.TextField id={fieldNameToId(fieldName)} fullWidth={true} multiline label={friendlyName} variant="outlined" value={text} onChange={(event) => setText(event.target.value)} InputLabelProps={{shrink: true,}} style={{maxWidth: "1000px"}}/>)
       }
       </div>
     )
