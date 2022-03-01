@@ -433,7 +433,7 @@ const TeamView = ({id, cloneID}) => {
   }, [id])
   React.useEffect(() => {
     return () => {
-      detailPersistentStore[idRef.current] = registerForm(value => {
+      detailPersistentStore[idRef.current].prevCallbackId = registerForm(value => {
         detailPersistentStore[idRef.current].td = value !== null
       })
     }
