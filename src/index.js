@@ -109,7 +109,8 @@ const App = () => {
       x => {
         const photo = x.photo
         if (imageCache[photo] === undefined) {
-          imageCache[photo] = <img src={photo} alt="cache"/>
+          imageCache[photo] = new Image()
+          imageCache[photo].src = photo
         }
       }
     ) : undefined)
