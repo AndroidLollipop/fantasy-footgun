@@ -428,6 +428,7 @@ const TeamView = ({id, cloneID}) => {
   React.useEffect(() => {
     if (detailPersistentStore[id].prevCallbackId !== null) {
       deregisterForm(detailPersistentStore[id].prevCallbackId)
+      detailPersistentStore[id].prevCallbackId = null
     }
     return () => {}
   }, [id])
