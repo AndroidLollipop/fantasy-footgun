@@ -348,26 +348,36 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
       {options.map((val, index) => (<option key={index} value={val}>{val}</option>))}
       </Material.TextField>)
       :fieldType === "selectBlob" ? 
-      (<React.Fragment>
-        <Material.TextField 
-        fullWidth={true}
-        select
-        label={friendlyName}
-        variant="outlined"
-        value={text}
-        SelectProps={{
-          native: true
-        }}
-        onChange={(event) => setText(event.target.value)}
-        InputLabelProps={{
-          shrink: true,
-        }}
-        style={{maxWidth: "1000px"}}
-        >
-        {(options => text === null ? [<option key={-1} value={null}></option>, ...options] : options)(blobs[blobName].map((val, index) => (<option key={index} value={val.name}>{val.friendlyName}</option>)))}
-        </Material.TextField>
-        <div style={{flexBasis: "100%", height: "12px"}}/>{text === null ? <div style={{height: 125, width: 1}}/> : <img src={blobs[blobName].find(x => x.name === text)?.photo} height={125}/>}
-      </React.Fragment>)
+      (text === null ? 
+        (<div style={radioItemStyle}><div style={{marginRight: "auto"}}><Material.FormControl>
+          <Material.FormLabel id={fieldName}>
+            {friendlyName}
+          </Material.FormLabel>
+          <Material.RadioGroup onChange={(event) => setText(event.target.value)}>
+            {blobs[blobName].map((val, index) => (<Material.FormControlLabel value={val.name} control={<Material.Radio/>} label={val.friendlyName}/>))}
+          </Material.RadioGroup>
+        </Material.FormControl></div></div>) :
+        (<React.Fragment>
+          <Material.TextField 
+          fullWidth={true}
+          select
+          label={friendlyName}
+          variant="outlined"
+          value={text}
+          SelectProps={{
+            native: true
+          }}
+          onChange={(event) => setText(event.target.value)}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          style={{maxWidth: "1000px"}}
+          >
+          {blobs[blobName].map((val, index) => (<option key={index} value={val.name}>{val.friendlyName}</option>))}
+          </Material.TextField>
+          <div style={{flexBasis: "100%", height: "12px"}}/>{<img src={blobs[blobName].find(x => x.name === text)?.photo} height={125}/>}
+        </React.Fragment>)
+      )
       :fieldType === "multi" ?
       (<Material.TextField
       fullWidth={true}
@@ -414,6 +424,12 @@ const formItemStyle = {
   paddingRight: "12px",
   paddingTop: "5px",
   paddingBottom: "7px"
+}
+
+const radioItemStyle = {
+  width: "100%",
+  maxWidth: "1000px",
+  display: "flex"
 }
 
 const TeamView = ({id, cloneID}) => {
