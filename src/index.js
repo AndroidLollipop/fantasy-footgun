@@ -259,7 +259,7 @@ const TeamDisplay = ({blobs, data, fields, setTd}) => {
   return data === undefined ? <div/> : <div>
     <div>
       {fields.map((field, index) => {
-        const imgUrl = blobs[field.blobName].find(x => x.name === data?.[field.name])?.photo
+        const imgUrl = blobs?.[field.blobName]?.find(x => x.name === data?.[field.name])?.photo
         return field.fieldType === "selectBlob" ? (
           <div style={formItemStyle} key={index}>
             <Material.Typography>{`${field.columnName}: ${blobs[field.blobName].find(x => x.name === data?.[field.name])?.friendlyName ?? data?.[field.name]}`}</Material.Typography>
