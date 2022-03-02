@@ -243,7 +243,7 @@ const teamValidator = data => {
     const val = data[field]
     if (!val || typeof val === "string" && val.length === 0) {
       const element = document.getElementById(fieldNameToId(field))
-      element?.scrollIntoView({behavior: "smooth", block: "center"})
+      element?.scrollIntoView({behavior: "smooth"})
       return ["FAILED", "Please fill in all fields"]
     }
   }
