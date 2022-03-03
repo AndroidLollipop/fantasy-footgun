@@ -106,16 +106,18 @@ const App = () => {
     socket.emit("requestEraseEpoch")
     const onLoad = () => {
       window.removeEventListener("load", onLoad)
-      const form = readForm()
-      form.fields.forEach(x => x.blobName ? form.blobs[x.blobName].forEach(
-        x => {
-          const photo = x.photo
-          if (imageCache[photo] === undefined) {
-            imageCache[photo] = new Image()
-            imageCache[photo].src = photo
+      setTimeout(() => {
+        const form = readForm()
+        form.fields.forEach(x => x.blobName ? form.blobs[x.blobName].forEach(
+          x => {
+            const photo = x.photo
+            if (imageCache[photo] === undefined) {
+              imageCache[photo] = new Image()
+              imageCache[photo].src = photo
+            }
           }
-        }
-      ) : undefined)
+        ) : undefined)
+      })
     }
     window.addEventListener("load", onLoad)
     return () => {
