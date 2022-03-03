@@ -104,7 +104,7 @@ const App = () => {
     socket.emit("requestIndents", "")
     socket.emit("requestNotifications", "")
     socket.emit("requestEraseEpoch")
-    const onLoad = event => {
+    const onLoad = () => {
       window.removeEventListener("load", onLoad)
       const form = readForm()
       form.fields.forEach(x => x.blobName ? form.blobs[x.blobName].forEach(
