@@ -386,7 +386,7 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
       >
       {options.map((val, index) => (<option key={index} value={val}>{val}</option>))}
       </Material.TextField>)
-      :fieldType === "selectBlob" ? 
+      :fieldType === "selectBlobPhoto" ? 
       (<React.Fragment>
         <Material.TextField 
         id={fieldNameToId(fieldName)}
@@ -408,6 +408,15 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
         </Material.TextField>
         <div style={{flexBasis: "100%", height: "12px"}}/>{text === null ? <div style={{height: 125, width: 1}}/> : <img src={blobs[blobName].find(x => x.name === text)?.photo} height={125} style={{minWidth: "1px"}}/>}
       </React.Fragment>)
+      :fieldType === "selectBlob" ?
+      (<div style={{width: "100%", maxWidth: "1000px", display: "flex"}}><div style={{marginRight: "auto"}}><Material.FormControl>
+          <Material.FormLabel id={fieldName}>
+            {friendlyName}
+          </Material.FormLabel>
+          <Material.RadioGroup id={fieldNameToId(fieldName)} onChange={(event) => setText(event.target.value)}>
+            {blobs[blobName].map((val, index) => (<Material.FormControlLabel value={val.name} control={<Material.Radio/>} label={val.friendlyName}/>))}
+          </Material.RadioGroup>
+        </Material.FormControl></div></div>)
       :fieldType === "multi" ?
       (<Material.TextField
       fullWidth={true}
