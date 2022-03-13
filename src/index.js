@@ -281,7 +281,6 @@ const TeamDisplay = ({blobs, data, fields, setTd}) => {
           <div style={formItemStyle} key={index}>
             <Material.Typography>{`${field.columnName}: ${blobs[field.blobName].find(x => x.name === data?.[field.name])?.friendlyName ?? data?.[field.name]}`}</Material.Typography>
             <div style={{flexBasis: "100%", height: "12px"}}/>
-            {imgUrl !== undefined ? <img src={imgUrl} height={125} style={{minWidth: "1px"}}/> : undefined}
           </div>
         ) : (
           <div style={formItemStyle} key={index}>
