@@ -409,7 +409,7 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
         <div style={{flexBasis: "100%", height: "12px"}}/>{text === null ? <div style={{height: 125, width: 1}}/> : <img src={blobs[blobName].find(x => x.name === text)?.photo} height={125} style={{minWidth: "1px"}}/>}
       </React.Fragment>)
       :fieldType === "selectBlob" ?
-      (<div style={{width: "100%", maxWidth: "1000px", display: "flex"}}><div style={{marginRight: "auto"}}><Material.FormControl>
+      (<div style={{width: "100%", maxWidth: "1000px", display: "flex", textAlign: "left"}}><div style={{marginRight: "auto"}}><Material.FormControl>
           <Material.FormLabel id={fieldName}>
             {friendlyName}
           </Material.FormLabel>
