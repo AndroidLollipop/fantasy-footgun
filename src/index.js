@@ -412,7 +412,7 @@ const FormFactory = ({blobs, prefill, fields, formPersistentStore, validator}) =
           <Material.FormLabel id={fieldName}>
             {friendlyName}
           </Material.FormLabel>
-          <Material.RadioGroup id={fieldNameToId(fieldName)} onChange={(event) => setText(event.target.value)}>
+          <Material.RadioGroup id={fieldNameToId(fieldName)} value={text} onChange={(event) => setText(event.target.value)}>
             {blobs[blobName].map((val, index) => (<Material.FormControlLabel value={val.name} control={<Material.Radio/>} label={val.friendlyName}/>))}
           </Material.RadioGroup>
         </Material.FormControl></div></div>)
